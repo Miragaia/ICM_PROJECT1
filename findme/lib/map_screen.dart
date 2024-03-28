@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -7,27 +9,72 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  late GoogleMapController mapController;
+  bool _isLocationPermissionGranted = false;
+  late GoogleMapController _controller;
+  late CameraPosition _initialCameraPosition = CameraPosition(
+    target: LatLng(0.0, 0.0), // Default location
+    zoom: 10, // Default zoom level
+  );
 
-  final LatLng _center = const LatLng(37.7749, -122.4194);
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
+  @override
+  void initState() {
+    super.initState();
+    _requestLocationPermission();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Map Screen'),
+        title: Text('Map'),
       ),
-      body: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: _center,
-          zoom: 11.0,
-        ),
-      ),
+      body: _isLocationPermissionGranted
+          ? GoogleMap(
+              initialCameraPosition: _initialCameraPosition,
+              mapType: MapType.normal,
+              onMapCreated: (GoogleMapController controller) {
+                setState(() {
+                  _controller = controller;
+                });
+                _getUserLocation();
+              },
+            )
+          : Center(
+              child: CircularProgressIndicator(),
+            ),
     );
+  }
+
+  Future<void> _requestLocationPermission() async {
+    var permissionResult = await Permission.location.request();
+    if (permissionResult.isGranted) {
+      setState(() {
+        _isLocationPermissionGranted = true;
+      });
+    }
+  }
+
+  Future<void> _getUserLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _initialCameraPosition = CameraPosition(
+          target: LatLng(position.latitude, position.longitude),
+          zoom: 15,
+        );
+      });
+
+      _controller.animateCamera(
+        CameraUpdate.newLatLng(
+          LatLng(position.latitude, position.longitude),
+        ),
+      );
+    } catch (e) {
+      print('Error getting user location: $e');
+    }
   }
 }
