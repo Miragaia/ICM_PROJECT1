@@ -1,23 +1,24 @@
-import '../../widgets/custom_text_form_field.dart';
-import '../../widgets/custom_elevated_button.dart';
-import '../../widgets/custom_icon_button.dart';
 import 'package:flutter/material.dart';
-import '../../core/app_export.dart';
+import 'package:findme/widgets/custom_text_form_field.dart';
+import 'package:findme/widgets/custom_elevated_button.dart';
+import 'package:findme/widgets/custom_icon_button.dart';
+import 'package:findme/core/app_export.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../home_page/home_page.dart';
 
-class LogInScreen extends StatelessWidget {
-  LogInScreen({Key? key})
-      : super(
-          key: key,
-        );
+class LogInScreen extends StatefulWidget {
+  const LogInScreen({Key? key}) : super(key: key);
+
+  @override
+  _LogInScreenState createState() => _LogInScreenState();
+}
+
+class _LogInScreenState extends State<LogInScreen> {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-  TextEditingController emailController = TextEditingController();
-
-  TextEditingController passwordController = TextEditingController();
-
-  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,9 @@ class LogInScreen extends StatelessWidget {
           print('User Photo URL: ${googleSignInAccount.photoUrl}');
 
           // Proceed with your app logic, such as navigating to the home page
-          Navigator.pushNamed(context, AppRoutes.homePage);
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return HomePage();
+          }));
         } else {
           // User cancelled the sign-in process
           print('Google Sign-In cancelled.');
@@ -154,7 +157,7 @@ class LogInScreen extends StatelessWidget {
                     CustomElevatedButton(
                       text: "LOG IN",
                       onPressed: () {
-                        // Navigate to home page when Sign Up button is clicked
+                        // Navigate to home page when Log In button is clicked
                         Navigator.pushNamed(context, AppRoutes.homePage);
                       },
                     ),

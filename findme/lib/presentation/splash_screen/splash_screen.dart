@@ -1,6 +1,7 @@
 import '../../widgets/custom_elevated_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../log_in_screen/log_in_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({Key? key})
@@ -60,7 +61,7 @@ class SplashScreen extends StatelessWidget {
                 buttonTextStyle: CustomTextStyles.bodyLargeOnPrimaryContainer,
                 onPressed: () {
                   // Redirecione para a página de login quando o botão for clicado
-                  Navigator.pushNamed(context, AppRoutes.logInScreen);
+                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LogInScreen()), (route) => false);
                 },
               ),
             ],

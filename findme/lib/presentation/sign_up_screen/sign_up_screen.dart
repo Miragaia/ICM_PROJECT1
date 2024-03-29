@@ -1,3 +1,7 @@
+import 'package:findme/presentation/home_page/home_page.dart';
+import 'package:findme/user_auth/firebase_auth/firebase_auth_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../widgets/app_bar/appbar_leading_image.dart';
 import '../../widgets/custom_text_form_field.dart';
@@ -6,19 +10,29 @@ import '../../widgets/custom_icon_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 
-class SignUpScreen extends StatelessWidget {
-  SignUpScreen({Key? key})
-      : super(
-          key: key,
-        );
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({Key? key}) : super(key: key);
 
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+
+  final FirebaseAuthService _auth = FirebaseAuthService();
   TextEditingController userNameController = TextEditingController();
-
   TextEditingController emailController = TextEditingController();
-
   TextEditingController passwordController = TextEditingController();
-
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+
+  @override
+  void dispose() {
+    userNameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -252,9 +266,29 @@ class SignUpScreen extends StatelessWidget {
     return CustomElevatedButton(
       text: "SIGN UP",
       onPressed: () {
-        // Navigate to home page when Sign Up button is clicked
-        Navigator.pushNamed(context, AppRoutes.homePage);
+        _signUp();
       },
     );
   }
+
+  void _signUp() async {
+    print("12341321AQUUIIII");
+    String username = userNameController.text.trim();
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    User? user = await _auth.signUpWithEmailAndPassword(email, password);
+
+    if (user != null) {
+      // Navigate to home page after successful sign up
+      print("succesfull sign up");
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return HomePage();
+      }));
+    }
+    else {
+      print("sign up failed");
+    }
+  }
+
 }
