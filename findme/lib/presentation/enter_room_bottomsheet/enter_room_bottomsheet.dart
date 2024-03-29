@@ -4,12 +4,19 @@ import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../presentation/room_screen/room_screen.dart';
 
-// ignore_for_file: must_be_immutable
 class EnterRoomBottomsheet extends StatelessWidget {
-  EnterRoomBottomsheet({Key? key})
-      : super(
-          key: key,
-        );
+  final String roomName; // Renamed from 'name'
+  final String location;
+  final String usersCount;
+  final String image;
+
+  EnterRoomBottomsheet({
+    Key? key,
+    required this.roomName, // Updated parameter name
+    required this.location,
+    required this.usersCount,
+    required this.image,
+  }) : super(key: key);
 
   TextEditingController passwordController = TextEditingController();
 
@@ -36,7 +43,7 @@ class EnterRoomBottomsheet extends StatelessWidget {
                 borderRadius: BorderRadiusStyle.circleBorder22,
               ),
               child: CustomImageView(
-                imagePath: ImageConstant.imgRectangle516,
+                imagePath: image, // Use the passed image path
                 height: 67.adaptSize,
                 width: 67.adaptSize,
                 radius: BorderRadius.circular(
@@ -47,7 +54,7 @@ class EnterRoomBottomsheet extends StatelessWidget {
             ),
             SizedBox(height: 13.v),
             Text(
-              "Deti Room",
+              roomName, // Use the passed room name
               style: theme.textTheme.titleLarge,
             ),
             SizedBox(height: 4.v),
@@ -63,7 +70,7 @@ class EnterRoomBottomsheet extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(left: 5.h),
                   child: Text(
-                    "Aveiro, Portugal",
+                    location, // Use the passed location
                     style: theme.textTheme.titleSmall,
                   ),
                 ),
@@ -81,7 +88,7 @@ class EnterRoomBottomsheet extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(left: 3.h),
                   child: Text(
-                    "3 Users",
+                    usersCount, // Use the passed users count
                     style: CustomTextStyles.bodyLargePoppins,
                   ),
                 ),
@@ -106,11 +113,15 @@ class EnterRoomBottomsheet extends StatelessWidget {
               text: "Enter Room",
               buttonTextStyle: theme.textTheme.headlineSmall!,
               onPressed: () {
-                Navigator.push(
+                Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => RoomScreen(),
-                  ),
+                  AppRoutes.roomScreen,
+                  arguments: {
+                    'roomName': roomName,
+                    'location': location,
+                    'usersCount': usersCount,
+                    'image': image,
+                  },
                 );
               },
             ),

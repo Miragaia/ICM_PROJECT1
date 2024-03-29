@@ -6,14 +6,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 
-import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,10 +24,10 @@ import 'dart:math';
 
 class RoomScreen extends StatefulWidget {
   @override
-  _MapScreenState createState() => _MapScreenState();
+  _RoomScreenState createState() => _RoomScreenState();
 }
 
-class _MapScreenState extends State<RoomScreen> {
+class _RoomScreenState extends State<RoomScreen> {
   late GoogleMapController _controller;
   late CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(0.0, 0.0), // Default location
@@ -51,6 +51,12 @@ class _MapScreenState extends State<RoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic> args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+    final String roomName = args['roomName'];
+    final String location = args['location'];
+    final String usersCount = args['usersCount'];
+    final String image = args['image'];
     return SafeArea(
         child: Scaffold(
             appBar: _buildAppBar(context),
@@ -59,42 +65,58 @@ class _MapScreenState extends State<RoomScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 7.v),
                 child: Column(children: [
                   Container(
-                      height: 70.adaptSize,
-                      width: 70.adaptSize,
-                      padding: EdgeInsets.symmetric(horizontal: 1.h),
-                      decoration: AppDecoration.fillGreen.copyWith(
-                          borderRadius: BorderRadiusStyle.circleBorder22),
-                      child: CustomImageView(
-                          imagePath: ImageConstant.imgRectangle516,
-                          height: 67.adaptSize,
-                          width: 67.adaptSize,
-                          radius: BorderRadius.circular(15.h),
-                          alignment: Alignment.topCenter)),
-                  SizedBox(height: 3.v),
-                  Text("Deti Room", style: theme.textTheme.titleLarge),
+                    height: 70.adaptSize,
+                    width: 70.adaptSize,
+                    padding: EdgeInsets.symmetric(horizontal: 1.h),
+                    decoration: AppDecoration.fillGreen.copyWith(
+                      borderRadius: BorderRadiusStyle.circleBorder22,
+                    ),
+                    child: CustomImageView(
+                      imagePath: image, // Use the passed image path
+                      height: 67.adaptSize,
+                      width: 67.adaptSize,
+                      radius: BorderRadius.circular(15.h),
+                      alignment: Alignment.topCenter,
+                    ),
+                  ),
+                  Text(roomName,
+                      style: theme
+                          .textTheme.titleLarge), // Use the passed roomName
                   SizedBox(height: 4.v),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    CustomImageView(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomImageView(
                         imagePath: ImageConstant.imgLocation,
                         height: 18.adaptSize,
                         width: 18.adaptSize,
-                        margin: EdgeInsets.only(bottom: 3.v)),
-                    Padding(
+                        margin: EdgeInsets.only(bottom: 3.v),
+                      ),
+                      Padding(
                         padding: EdgeInsets.only(left: 5.h),
-                        child: Text("Aveiro, Portugal",
-                            style: theme.textTheme.titleSmall))
-                  ]),
+                        child: Text(location,
+                            style: theme.textTheme
+                                .titleSmall), // Use the passed location
+                      ),
+                    ],
+                  ),
                   SizedBox(height: 5.v),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    CustomImageView(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomImageView(
                         imagePath: ImageConstant.imgImage4,
                         height: 28.v,
-                        width: 29.h),
-                    Padding(
+                        width: 29.h,
+                      ),
+                      Padding(
                         padding: EdgeInsets.only(left: 3.h),
-                        child: Text("3 Users",
-                            style: CustomTextStyles.bodyLargePoppins))
-                  ]),
+                        child: Text(usersCount,
+                            style: CustomTextStyles
+                                .bodyLargePoppins), // Use the passed usersCount
+                      ),
+                    ],
+                  ),
                   SizedBox(height: 10.v),
                   _buildMap(context),
                   SizedBox(height: 5.v),

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class HomeItemWidget extends StatelessWidget {
-  final String name;
+  final String roomName;
   final String location;
   final String usersCount;
   final String image;
 
   const HomeItemWidget({
     Key? key,
-    required this.name,
+    required this.roomName,
     required this.location,
     required this.usersCount,
     required this.image,
@@ -34,7 +34,7 @@ class HomeItemWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                name,
+                roomName,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(location),

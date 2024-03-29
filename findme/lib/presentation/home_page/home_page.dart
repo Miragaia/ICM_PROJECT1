@@ -17,6 +17,36 @@ class HomePage extends StatelessWidget {
 
   TextEditingController searchController = TextEditingController();
 
+  List<Map<String, dynamic>> roomsData = [
+    {
+      'roomName': "Deti Room",
+      'location': "Aveiro, Portugal",
+      'usersCount': "3 Users",
+      'image': ImageConstant.imgRectangle516,
+    },
+    {
+      'roomName': "Autocarro Bar Room",
+      'location': "Aveiro, Portugal",
+      'usersCount': "1 User",
+      'image': ImageConstant.imgRectangle51650x50,
+    },
+    {
+      'roomName': "BE Room",
+      'location': "Aveiro, Portugal",
+      'usersCount': "8 Users",
+      'image': ImageConstant.imgRectangle5161,
+    },
+  ];
+
+  void createRoom(String roomName, String location, String image) {
+    roomsData.add({
+      'roomName': roomName,
+      'location': location,
+      'usersCount': "1 Users",
+      'image': ImageConstant.imgDefaulRoom,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -50,7 +80,7 @@ class HomePage extends StatelessWidget {
                                     showAll: "Show All",
                                   ),
                                   SizedBox(height: 15.v),
-                                  _buildHome(context),
+                                  _buildHome(context, roomsData),
                                 ],
                               ),
                             ),
@@ -88,8 +118,15 @@ class HomePage extends StatelessWidget {
             onTap: () {
               showModalBottomSheet(
                 context: context,
+                isScrollControlled: true,
                 builder: (BuildContext context) {
-                  return CreateRoomBottomsheet();
+                  return SizedBox(
+                    height: MediaQuery.of(context).size.height *
+                        0.85, // Define a altura como 80% da altura da tela
+                    child: CreateRoomBottomsheet(
+                      onCreateRoom: createRoom,
+                    ),
+                  );
                 },
               );
             },
@@ -167,45 +204,31 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHome(BuildContext context) {
-    List<Map<String, dynamic>> roomsData = [
-      {
-        'name': "Deti Room",
-        'location': "Aveiro, Portugal",
-        'usersCount': "3 Users",
-        'image': ImageConstant.imgRectangle516,
-      },
-      {
-        'name': "Autocarro Bar Room",
-        'location': "Aveiro, Portugal",
-        'usersCount': "1 User",
-        'image': ImageConstant.imgRectangle51650x50,
-      },
-      {
-        'name': "BE Room",
-        'location': "Aveiro, Portugal",
-        'usersCount': "8 Users",
-        'image': ImageConstant.imgRectangle5161,
-      },
-    ];
-
+  Widget _buildHome(
+    BuildContext context,
+    List<Map<String, dynamic>> roomsData,
+  ) {
     List<Widget> roomsWidgets = [];
 
     for (int i = 0; i < roomsData.length; i++) {
       roomsWidgets.add(
         GestureDetector(
           onTap: () {
-            // Call showModalBottomSheet to open the bottom sheet
+            // Call showModalBottomSheet to open the bottom sheet and pass the room details
             showModalBottomSheet(
               context: context,
               builder: (BuildContext context) {
-                // Return an instance of EnterRoomBottomsheet
-                return EnterRoomBottomsheet();
+                return EnterRoomBottomsheet(
+                  roomName: roomsData[i]['roomName'],
+                  location: roomsData[i]['location'],
+                  usersCount: roomsData[i]['usersCount'],
+                  image: roomsData[i]['image'],
+                );
               },
             );
           },
           child: HomeItemWidget(
-            name: roomsData[i]['name'],
+            roomName: roomsData[i]['roomName'],
             location: roomsData[i]['location'],
             usersCount: roomsData[i]['usersCount'],
             image: roomsData[i]['image'],
@@ -213,10 +236,9 @@ class HomePage extends StatelessWidget {
         ),
       );
 
-      // Adicione um SizedBox após cada item, exceto o último
+      // Add a SizedBox after each item, except the last one
       if (i < roomsData.length - 1) {
-        roomsWidgets
-            .add(SizedBox(height: 10)); // Ajuste a altura conforme necessário
+        roomsWidgets.add(SizedBox(height: 10));
       }
     }
 

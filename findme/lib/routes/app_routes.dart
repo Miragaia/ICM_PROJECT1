@@ -23,6 +23,8 @@ class AppRoutes {
     roomScreen: (context) => RoomScreen(),
     profileScreen: (context) => ProfileScreen(),
     homePage: (context) => HomePage(),
-    createRoom: (context) => CreateRoomBottomsheet(),
+    createRoom: (context) => CreateRoomBottomsheet(
+          onCreateRoom: (String roomName, String location, String image) {},
+        ),
   };
 }
