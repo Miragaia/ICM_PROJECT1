@@ -1,10 +1,10 @@
-import '../../widgets/custom_text_form_field.dart';
-import '../../widgets/custom_drop_down.dart';
-import '../../widgets/custom_elevated_button.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../../widgets/custom_elevated_button.dart';
+import '../../widgets/custom_text_form_field.dart';
 
-class CreateRoomBottomsheet extends StatelessWidget {
+class CreateRoomBottomsheet extends StatefulWidget {
   final Function(String, String, String) onCreateRoom;
 
   CreateRoomBottomsheet({
@@ -12,32 +12,36 @@ class CreateRoomBottomsheet extends StatelessWidget {
     required this.onCreateRoom,
   }) : super(key: key);
 
+  @override
+  _CreateRoomBottomsheetState createState() => _CreateRoomBottomsheetState();
+}
+
+class _CreateRoomBottomsheetState extends State<CreateRoomBottomsheet> {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final FocusNode _focusNode = FocusNode();
 
   TextEditingController nameController = TextEditingController();
   TextEditingController locationController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
-  List<String> dropdownItemList = [
-    "Item One",
-    "Item Two",
-    "Item Three",
-  ];
+  @override
+  void dispose() {
+    nameController.dispose();
+    locationController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).requestFocus(
-            _focusNode); // Redirecionar o foco quando tocar fora dos campos de texto
+        FocusScope.of(context).requestFocus(_focusNode);
       },
       child: SingleChildScrollView(
         child: Container(
           width: double.maxFinite,
-          padding: EdgeInsets.symmetric(
-            horizontal: 20.h,
-            vertical: 10.v,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 10.v),
           decoration: AppDecoration.fillGray.copyWith(
             borderRadius: BorderRadiusStyle.customBorderTL50,
           ),
@@ -101,14 +105,7 @@ class CreateRoomBottomsheet extends StatelessWidget {
               CustomElevatedButton(
                 text: "Create Room",
                 onPressed: () {
-                  onCreateRoom(
-                    nameController.text,
-                    locationController.text, // Localização da sala
-                    ImageConstant
-                        .imgRectangle516, // Imagem (definido como exemplo)
-                  );
-                  Navigator.pop(
-                      context); // Fecha o modal bottom sheet após criar a sala
+                  _createRoom(context);
                 },
               ),
             ],
@@ -116,5 +113,31 @@ class CreateRoomBottomsheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _createRoom(BuildContext context) async {
+    String name = nameController.text;
+    String location = locationController.text;
+    String password = passwordController.text;
+
+    // Add room to Firestore collection
+    try {
+      DocumentReference roomRef = await firestore.collection('rooms').add({
+        'name': name,
+        'location': location,
+        'password': password,
+      });
+
+      String roomId = roomRef.id;
+
+      // Notify the callback function
+      widget.onCreateRoom(name, location, roomId);
+
+      // Close the bottom sheet
+      Navigator.pop(context);
+    } catch (e) {
+      print('Error creating room: $e');
+      // Handle error
+    }
   }
 }

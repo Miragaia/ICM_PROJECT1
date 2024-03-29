@@ -1,51 +1,18 @@
-import '../../widgets/app_bar/custom_app_bar.dart';
-import '../../widgets/app_bar/appbar_leading_iconbutton.dart';
-import '../../widgets/app_bar/appbar_trailing_circleimage.dart';
-import '../../widgets/custom_search_view.dart';
-import '../../widgets/custom_icon_button.dart';
-import 'widgets/home_item_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../../widgets/app_bar/custom_app_bar.dart';
+import '../../widgets/app_bar/appbar_trailing_circleimage.dart';
+import '../../widgets/custom_icon_button.dart';
+import '../../widgets/custom_search_view.dart';
 import '../../presentation/create_room_bottomsheet/create_room_bottomsheet.dart';
 import '../../presentation/enter_room_bottomsheet/enter_room_bottomsheet.dart';
+import 'widgets/home_item_widget.dart';
 
 class HomePage extends StatelessWidget {
-  HomePage({Key? key})
-      : super(
-          key: key,
-        );
+  HomePage({Key? key}) : super(key: key);
 
   TextEditingController searchController = TextEditingController();
-
-  List<Map<String, dynamic>> roomsData = [
-    {
-      'roomName': "Deti Room",
-      'location': "Aveiro, Portugal",
-      'usersCount': "3 Users",
-      'image': ImageConstant.imgRectangle516,
-    },
-    {
-      'roomName': "Autocarro Bar Room",
-      'location': "Aveiro, Portugal",
-      'usersCount': "1 User",
-      'image': ImageConstant.imgRectangle51650x50,
-    },
-    {
-      'roomName': "BE Room",
-      'location': "Aveiro, Portugal",
-      'usersCount': "8 Users",
-      'image': ImageConstant.imgRectangle5161,
-    },
-  ];
-
-  void createRoom(String roomName, String location, String image) {
-    roomsData.add({
-      'roomName': roomName,
-      'location': location,
-      'usersCount': "1 Users",
-      'image': ImageConstant.imgDefaulRoom,
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,28 +31,39 @@ class HomePage extends StatelessWidget {
                     SizedBox(
                       height: 425.v,
                       width: double.maxFinite,
-                      child: Stack(
-                        alignment: Alignment.bottomCenter,
-                        children: [
-                          Align(
-                            alignment: Alignment.center,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 20.h),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildTwentySix(
-                                    context,
-                                    availableRooms: "Available Rooms",
-                                    showAll: "Show All",
-                                  ),
-                                  SizedBox(height: 15.v),
-                                  _buildHome(context, roomsData),
-                                ],
-                              ),
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance.collection('rooms').snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+
+                          if (snapshot.hasError) {
+                            return Center(child: Text('Error: ${snapshot.error}'));
+                          }
+
+                          List<Map<String, dynamic>> roomsData = snapshot.data!.docs.map((doc) {
+                            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                            return {
+                              'roomName': data['name'],
+                              'location': data['location'],
+                              'usersCount': "1 Users", // For now, consider it as static
+                              'image': ImageConstant.imgDefaulRoom, // For now, consider it as static
+                            };
+                          }).toList();
+
+                          return Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20.h),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildTwentySix(context, availableRooms: "Available Rooms", showAll: "Show All"),
+                                SizedBox(height: 15.v),
+                                _buildHome(context, roomsData),
+                              ],
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -105,66 +83,7 @@ class HomePage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildBottomItem(
-            context,
-            label: 'Home',
-            icon: Icons.home,
-            onTap: () => Navigator.pushNamed(context, AppRoutes.homePage),
-          ),
-          _buildBottomItem(
-            context,
-            label: 'Create Room',
-            icon: Icons.add,
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (BuildContext context) {
-                  return SizedBox(
-                    height: MediaQuery.of(context).size.height *
-                        0.85, // Define a altura como 80% da altura da tela
-                    child: CreateRoomBottomsheet(
-                      onCreateRoom: createRoom,
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-          _buildBottomItem(
-            context,
-            label: 'Profile',
-            icon: Icons.person,
-            onTap: () => Navigator.pushNamed(context, AppRoutes.profileScreen),
-          ),
-          _buildBottomItem(
-            context,
-            label: 'Settings',
-            icon: Icons.settings,
-            onTap: () => Navigator.pushNamed(context, AppRoutes.homePage),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomItem(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    void Function()? onTap, // Define onTap parameter
-  }) {
-    return GestureDetector(
-      // Wrap the column with GestureDetector to handle taps
-      onTap: onTap, // Assign onTap callback
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.grey),
-          SizedBox(height: 5.v),
-          Text(
-            label,
-            style: TextStyle(color: Colors.grey),
-          ),
+          // Your bottom items
         ],
       ),
     );
@@ -196,7 +115,7 @@ class HomePage extends StatelessWidget {
           Expanded(
             child: CustomSearchView(
               controller: searchController,
-              hintText: "Serach rooms...",
+              hintText: "Search rooms...",
             ),
           ),
         ],
@@ -204,17 +123,13 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHome(
-    BuildContext context,
-    List<Map<String, dynamic>> roomsData,
-  ) {
+  Widget _buildHome(BuildContext context, List<Map<String, dynamic>> roomsData) {
     List<Widget> roomsWidgets = [];
 
     for (int i = 0; i < roomsData.length; i++) {
       roomsWidgets.add(
         GestureDetector(
           onTap: () {
-            // Call showModalBottomSheet to open the bottom sheet and pass the room details
             showModalBottomSheet(
               context: context,
               builder: (BuildContext context) {
