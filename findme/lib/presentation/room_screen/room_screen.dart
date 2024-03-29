@@ -95,7 +95,7 @@ class _MapScreenState extends State<RoomScreen> {
                         child: Text("3 Users",
                             style: CustomTextStyles.bodyLargePoppins))
                   ]),
-                  SizedBox(height: 38.v),
+                  SizedBox(height: 10.v),
                   _buildMap(context),
                   SizedBox(height: 5.v),
                   Text("Users", style: CustomTextStyles.titleLargeInter),
@@ -144,10 +144,10 @@ class _MapScreenState extends State<RoomScreen> {
                                     child: Text("Active",
                                         style: theme.textTheme.bodyMedium))
                               ]))),
-                  SizedBox(height: 24.v),
+                  SizedBox(height: 10.v),
                   Text("Direction to Friend: $_direction",
                       style: CustomTextStyles.titleLargeInter),
-                  SizedBox(height: 14.v),
+                  SizedBox(height: 6.v),
                   Transform.rotate(
                     angle: (_direction == 'North')
                         ? 0
@@ -168,31 +168,25 @@ class _MapScreenState extends State<RoomScreen> {
                                                     : 0,
                     child: CustomImageView(
                         imagePath: ImageConstant.imgImage11,
-                        height: 74.v,
-                        width: 78.h,
+                        height: 50.v,
+                        width: 50.h,
                         alignment: Alignment.centerRight,
                         margin: EdgeInsets.only(right: 119.h)),
                   ),
-                  SizedBox(height: 2.v),
+                  SizedBox(height: 20.v),
                   Align(
                       alignment: Alignment.centerRight,
                       child: Container(
-                          height: 49.v,
+                          height: 40.v,
                           width: 154.h,
                           margin: EdgeInsets.only(right: 81.h),
                           child:
                               Stack(alignment: Alignment.topCenter, children: [
                             Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Text("Apply Now",
-                                    style: CustomTextStyles
-                                        .titleMediumPoppinsOnPrimaryContainer)),
-                            Align(
                                 alignment: Alignment.topCenter,
                                 child: Text("12 meters away",
                                     style: CustomTextStyles.titleLargeGray700))
                           ]))),
-                  SizedBox(height: 6.v)
                 ]))));
   }
 
@@ -213,8 +207,8 @@ class _MapScreenState extends State<RoomScreen> {
   /// Section Widget
   Widget _buildMap(BuildContext context) {
     return SizedBox(
-      height: 188.v,
-      width: 335.h,
+      height: 250.v,
+      width: 340.h,
       child: _isLocationPermissionGranted
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
