@@ -272,7 +272,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _signUp() async {
-    print("12341321AQUUIIII");
     String username = userNameController.text.trim();
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
