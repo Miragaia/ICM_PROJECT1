@@ -1,3 +1,5 @@
+import 'package:findme/user_auth/firebase_auth/firebase_auth_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:findme/widgets/custom_text_form_field.dart';
 import 'package:findme/widgets/custom_elevated_button.dart';
@@ -14,9 +16,20 @@ class LogInScreen extends StatefulWidget {
 }
 
 class _LogInScreenState extends State<LogInScreen> {
+
+  final FirebaseAuthService _auth = FirebaseAuthService();
+  
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
@@ -157,8 +170,7 @@ class _LogInScreenState extends State<LogInScreen> {
                     CustomElevatedButton(
                       text: "LOG IN",
                       onPressed: () {
-                        // Navigate to home page when Log In button is clicked
-                        Navigator.pushNamed(context, AppRoutes.homePage);
+                        _signIn();
                       },
                     ),
                     SizedBox(height: 35.v),
@@ -249,4 +261,23 @@ class _LogInScreenState extends State<LogInScreen> {
       ),
     );
   }
+
+  void _signIn() async {
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    User? user = await _auth.signInWithEmailAndPassword(email, password);
+
+    if (user != null) {
+      // Navigate to home page after successful sign up
+      print("succesfull sign in");
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return HomePage();
+      }));
+    }
+    else {
+      print("sign in failed");
+    }
+  }
+
 }
