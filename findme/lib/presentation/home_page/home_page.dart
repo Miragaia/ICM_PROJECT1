@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
 import '../../widgets/app_bar/custom_app_bar.dart';
@@ -9,11 +10,23 @@ import '../../presentation/create_room_bottomsheet/create_room_bottomsheet.dart'
 import '../../presentation/enter_room_bottomsheet/enter_room_bottomsheet.dart';
 import 'widgets/home_item_widget.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
 
-  TextEditingController searchController = TextEditingController();
+  @override
+  _HomePageState createState() => _HomePageState();
+}
 
+class _HomePageState extends State<HomePage> {
+  TextEditingController searchController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      updateRoomId();
+    });
+  }
+  
   void createRoom(String roomName, String location, String image) {
     //nothing done here
   }
@@ -251,5 +264,21 @@ class HomePage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Future<void> updateRoomId() async {
+    try {
+      String userEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+      if (userEmail.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('users').doc(userEmail).update({
+          'roomId': "",
+        });
+        print('RoomId updated successfully');
+      } else {
+        print('User email is empty');
+      }
+    } catch (e) {
+      print('Error updating roomId: $e');
+    }
   }
 }
