@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../widgets/app_bar/appbar_leading_image.dart';
 import '../../widgets/app_bar/appbar_title.dart';
@@ -34,6 +36,8 @@ class _RoomScreenState extends State<RoomScreen> {
     zoom: 10, // Default zoom level
   );
 
+  List<User> _users = []; // List to store users data
+
   LatLng _friendLocation = LatLng(0.0, 0.0); // Friend's location
   String _direction = ''; // Direction to friend's location
   String _latitude = '';
@@ -48,6 +52,35 @@ class _RoomScreenState extends State<RoomScreen> {
     _updateLocationAndDirection(); // Start updating location and direction
     _listenForFriendLocation(); // Start listening for friend's location updates
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchUsers();
+  }
+
+
+  // Fetch users data with the current roomId
+  Future<void> _fetchUsers() async {
+    try {
+      final Map<String, dynamic> args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+      final String roomId = args['roomName']; // Get roomId from arguments
+
+      QuerySnapshot usersSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('roomId', isEqualTo: roomId)
+          .get();
+
+      setState(() {
+        _users = usersSnapshot.docs.map((doc) => User.fromSnapshot(doc)).toList();
+      });
+      print('Users fetched: $_users');
+    } catch (e) {
+      print('Error fetching users: $e');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -124,48 +157,29 @@ class _RoomScreenState extends State<RoomScreen> {
                   SizedBox(height: 1.v),
                   Text("Select the User to follow",
                       style: theme.textTheme.titleSmall),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    CustomImageView(
-                        imagePath: ImageConstant.imgImage7,
-                        height: 26.adaptSize,
-                        width: 26.adaptSize,
-                        margin: EdgeInsets.only(top: 4.v)),
-                    Padding(
-                        padding: EdgeInsets.only(left: 27.h),
-                        child: Text("Ricardo",
-                            style: CustomTextStyles.titleLargeGray700))
-                  ]),
-                  SizedBox(height: 6.v),
-                  Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                          padding: EdgeInsets.only(right: 66.h),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CustomImageView(
-                                    imagePath: ImageConstant.imgImage8,
-                                    height: 26.adaptSize,
-                                    width: 26.adaptSize,
-                                    margin: EdgeInsets.only(bottom: 4.v)),
-                                Padding(
-                                    padding: EdgeInsets.only(left: 28.h),
-                                    child: Text("Filipe",
-                                        style: CustomTextStyles
-                                            .titleLargeGray700)),
-                                CustomImageView(
-                                    imagePath: ImageConstant.imgImage10,
-                                    height: 10.adaptSize,
-                                    width: 10.adaptSize,
-                                    margin: EdgeInsets.only(
-                                        left: 13.h, top: 9.v, bottom: 11.v)),
-                                Padding(
-                                    padding: EdgeInsets.only(
-                                        left: 3.h, top: 4.v, bottom: 4.v),
-                                    child: Text("Active",
-                                        style: theme.textTheme.bodyMedium))
-                              ]))),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _users.map((user) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CustomImageView(
+                            imagePath: ImageConstant.imgImage7,
+                            height: 26.adaptSize,
+                            width: 26.adaptSize,
+                            margin: EdgeInsets.only(top: 4.v),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(left: 27.h),
+                            child: Text(
+                              user.name,
+                              style: CustomTextStyles.titleLargeGray700.copyWith(color: Colors.red), // Set the color to red
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                   SizedBox(height: 10.v),
                   Text("Direction to Friend: $_direction",
                       style: CustomTextStyles.titleLargeInter),
@@ -411,5 +425,30 @@ class _RoomScreenState extends State<RoomScreen> {
 
   onTapArrowLeft(BuildContext context) {
     Navigator.pop(context);
+  }
+}
+
+class User {
+  String id;
+  String name;
+  String email;
+  // Other properties...
+
+  User({
+    required this.id,
+    required this.name,
+    required this.email,
+    // Initialize other properties here...
+  });
+
+  // Factory method to construct User object from DocumentSnapshot
+  factory User.fromSnapshot(DocumentSnapshot snapshot) {
+    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+    return User(
+      id: snapshot.id,
+      name: data['username'] ?? '',
+      email: data['email'] ?? '',
+      // Map other properties accordingly...
+    );
   }
 }
