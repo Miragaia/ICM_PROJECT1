@@ -1,6 +1,7 @@
 import 'package:findme/presentation/home_page/home_page.dart';
 import 'package:findme/user_auth/firebase_auth/firebase_auth_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../widgets/app_bar/custom_app_bar.dart';
 import '../../widgets/app_bar/appbar_leading_image.dart';
@@ -279,15 +280,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
     User? user = await _auth.signUpWithEmailAndPassword(email, password);
 
     if (user != null) {
+      // Update Firestore collection with user information
+      await _updateUserCollection(username, email);
+
       // Navigate to home page after successful sign up
-      print("succesfull sign up");
       Navigator.push(context, MaterialPageRoute(builder: (context) {
         return HomePage();
       }));
-    }
-    else {
+    } else {
       print("sign up failed");
     }
   }
 
+  Future<void> _updateUserCollection(String username, String email) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(email).set({
+        'email': email,
+        'username': username,
+        'latitude': '', // Initialize with empty string
+        'longitude': '', // Initialize with empty string
+        'roomId': '', // Initialize with empty string
+      });
+      print('User data updated successfully');
+    } catch (e) {
+      print('Error updating user data: $e');
+    }
+  }
 }

@@ -120,15 +120,16 @@ class _CreateRoomBottomsheetState extends State<CreateRoomBottomsheet> {
     String location = locationController.text;
     String password = passwordController.text;
 
+    // Use room name as roomId
+    String roomId = name.toLowerCase().replaceAll(' ', '_');
+
     // Add room to Firestore collection
     try {
-      DocumentReference roomRef = await firestore.collection('rooms').add({
+      await firestore.collection('rooms').doc(roomId).set({
         'name': name,
         'location': location,
         'password': password,
       });
-
-      String roomId = roomRef.id;
 
       // Notify the callback function
       widget.onCreateRoom(name, location, roomId);
@@ -141,3 +142,4 @@ class _CreateRoomBottomsheetState extends State<CreateRoomBottomsheet> {
     }
   }
 }
+  

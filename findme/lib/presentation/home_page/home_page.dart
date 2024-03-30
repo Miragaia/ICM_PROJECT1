@@ -14,6 +14,10 @@ class HomePage extends StatelessWidget {
 
   TextEditingController searchController = TextEditingController();
 
+  void createRoom(String roomName, String location, String image) {
+    //nothing done here
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -83,7 +87,66 @@ class HomePage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Your bottom items
+          _buildBottomItem(
+            context,
+            label: 'Home',
+            icon: Icons.home,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.homePage),
+          ),
+          _buildBottomItem(
+            context,
+            label: 'Create Room',
+            icon: Icons.add,
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (BuildContext context) {
+                  return SizedBox(
+                    height: MediaQuery.of(context).size.height *
+                        0.85, // Define a altura como 80% da altura da tela
+                    child: CreateRoomBottomsheet(
+                      onCreateRoom: createRoom,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          _buildBottomItem(
+            context,
+            label: 'Profile',
+            icon: Icons.person,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.profileScreen),
+          ),
+          _buildBottomItem(
+            context,
+            label: 'Settings',
+            icon: Icons.settings,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.homePage),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomItem(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    void Function()? onTap, // Define onTap parameter
+  }) {
+    return GestureDetector(
+      // Wrap the column with GestureDetector to handle taps
+      onTap: onTap, // Assign onTap callback
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.grey),
+          SizedBox(height: 5.v),
+          Text(
+            label,
+            style: TextStyle(color: Colors.grey),
+          ),
         ],
       ),
     );

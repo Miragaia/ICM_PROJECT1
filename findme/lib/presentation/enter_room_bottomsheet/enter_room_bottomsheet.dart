@@ -1,24 +1,43 @@
-import '../../widgets/custom_text_form_field.dart';
-import '../../widgets/custom_elevated_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_export.dart';
+import '../../widgets/custom_text_form_field.dart';
+import '../../widgets/custom_elevated_button.dart';
 import '../../presentation/room_screen/room_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class EnterRoomBottomsheet extends StatelessWidget {
-  final String roomName; // Renamed from 'name'
+class EnterRoomBottomsheet extends StatefulWidget {
+  final String roomName;
   final String location;
   final String usersCount;
   final String image;
 
   EnterRoomBottomsheet({
     Key? key,
-    required this.roomName, // Updated parameter name
+    required this.roomName,
     required this.location,
     required this.usersCount,
     required this.image,
   }) : super(key: key);
 
-  TextEditingController passwordController = TextEditingController();
+  @override
+  _EnterRoomBottomsheetState createState() => _EnterRoomBottomsheetState();
+}
+
+class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
+  late TextEditingController passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    passwordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +62,7 @@ class EnterRoomBottomsheet extends StatelessWidget {
                 borderRadius: BorderRadiusStyle.circleBorder22,
               ),
               child: CustomImageView(
-                imagePath: image, // Use the passed image path
+                imagePath: widget.image,
                 height: 67.adaptSize,
                 width: 67.adaptSize,
                 radius: BorderRadius.circular(
@@ -54,7 +73,7 @@ class EnterRoomBottomsheet extends StatelessWidget {
             ),
             SizedBox(height: 13.v),
             Text(
-              roomName, // Use the passed room name
+              widget.roomName,
               style: theme.textTheme.titleLarge,
             ),
             SizedBox(height: 4.v),
@@ -70,7 +89,7 @@ class EnterRoomBottomsheet extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(left: 5.h),
                   child: Text(
-                    location, // Use the passed location
+                    widget.location,
                     style: theme.textTheme.titleSmall,
                   ),
                 ),
@@ -88,7 +107,7 @@ class EnterRoomBottomsheet extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(left: 3.h),
                   child: Text(
-                    usersCount, // Use the passed users count
+                    widget.usersCount,
                     style: CustomTextStyles.bodyLargePoppins,
                   ),
                 ),
@@ -112,17 +131,24 @@ class EnterRoomBottomsheet extends StatelessWidget {
               width: 220.h,
               text: "Enter Room",
               buttonTextStyle: theme.textTheme.headlineSmall!,
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.roomScreen,
-                  arguments: {
-                    'roomName': roomName,
-                    'location': location,
-                    'usersCount': usersCount,
-                    'image': image,
-                  },
-                );
+              onPressed: () async {
+                String password = passwordController.text;
+                bool isPasswordCorrect = await verifyPassword(widget.roomName, password);
+                if (isPasswordCorrect) {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.roomScreen,
+                    arguments: {
+                      'roomName': widget.roomName,
+                      'location': widget.location,
+                      'usersCount': widget.usersCount,
+                      'image': widget.image,
+                    },
+                  );
+                } else {
+                  // Show error message or handle incorrect password
+                  print('Incorrect password');
+                }
               },
             ),
             SizedBox(height: 76.v),
@@ -131,4 +157,45 @@ class EnterRoomBottomsheet extends StatelessWidget {
       ),
     );
   }
+
+  Future<bool> verifyPassword(String roomName, String password) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('rooms')
+          .where('name', isEqualTo: roomName)
+          .where('password', isEqualTo: password)
+          .limit(1)
+          .get();
+      
+      if (querySnapshot.docs.isNotEmpty) {
+        // Update the roomId in the user's document in Firestore
+        String roomId = querySnapshot.docs.first.id; // Assuming roomId is the document ID
+        await updateRoomId(roomId);
+        
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Error verifying password: $e');
+      return false;
+    }
+  }
+
+  Future<void> updateRoomId(String roomId) async {
+    try {
+      String userEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+      if (userEmail.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('users').doc(userEmail).update({
+          'roomId': roomId,
+        });
+        print('RoomId updated successfully');
+      } else {
+        print('User email is empty');
+      }
+    } catch (e) {
+      print('Error updating roomId: $e');
+    }
+  }
+
 }
