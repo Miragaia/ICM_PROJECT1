@@ -61,25 +61,27 @@ class _RoomScreenState extends State<RoomScreen> {
 
 
   // Fetch users data with the current roomId
-  Future<void> _fetchUsers() async {
+  void _fetchUsers() {
     try {
       final Map<String, dynamic> args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
       final String roomId = args['roomName']; // Get roomId from arguments
 
-      QuerySnapshot usersSnapshot = await FirebaseFirestore.instance
+      FirebaseFirestore.instance
           .collection('users')
           .where('roomId', isEqualTo: roomId)
-          .get();
-
-      setState(() {
-        _users = usersSnapshot.docs.map((doc) => User.fromSnapshot(doc)).toList();
+          .snapshots()
+          .listen((QuerySnapshot usersSnapshot) {
+        setState(() {
+          _users = usersSnapshot.docs.map((doc) => User.fromSnapshot(doc)).toList();
+        });
+        print('Users updated: $_users');
       });
-      print('Users fetched: $_users');
     } catch (e) {
       print('Error fetching users: $e');
     }
   }
+
 
 
   @override
@@ -159,7 +161,7 @@ class _RoomScreenState extends State<RoomScreen> {
                       style: theme.textTheme.titleSmall),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: _users.map((user) {
+                    children: _users.where((user) => user.email != FirebaseAuth.instance.currentUser?.email).map((user) {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
