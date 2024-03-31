@@ -59,7 +59,6 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
 
-  // Fetch users data with the current roomId
   void _fetchUsers() {
     try {
       final Map<String, dynamic> args =
@@ -72,7 +71,12 @@ class _RoomScreenState extends State<RoomScreen> {
           .snapshots()
           .listen((QuerySnapshot usersSnapshot) {
         setState(() {
-          _users = usersSnapshot.docs.map((doc) => User.fromSnapshot(doc)).toList();
+          _users = usersSnapshot.docs.map((doc) {
+            User user = User.fromSnapshot(doc);
+            // Set isSelected to true for the first user, and false for others
+            user.isSelected = _users.isEmpty ? true : false;
+            return user;
+          }).toList();
         });
         print('Users updated: $_users');
       });
@@ -80,6 +84,7 @@ class _RoomScreenState extends State<RoomScreen> {
       print('Error fetching users: $e');
     }
   }
+
 
 
 
@@ -161,23 +166,40 @@ class _RoomScreenState extends State<RoomScreen> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: _users.where((user) => user.email != FirebaseAuth.instance.currentUser?.email).map((user) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CustomImageView(
-                            imagePath: ImageConstant.imgImage7,
-                            height: 26.adaptSize,
-                            width: 26.adaptSize,
-                            margin: EdgeInsets.only(top: 4.v),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 27.h),
-                            child: Text(
-                              user.name,
-                              style: CustomTextStyles.titleLargeGray700.copyWith(color: Colors.red), // Set the color to red
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            // Set isSelected to true for the tapped user and false for others
+                            _users.forEach((currentUser) {
+                              currentUser.isSelected = (currentUser == user);
+                              // Update isSelected field in Firestore
+                              FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(currentUser.id)
+                                  .update({'isSelected': currentUser.isSelected})
+                                  .then((_) => print('User isSelected updated in Firestore'))
+                                  .catchError((error) => print('Error updating user isSelected: $error'));
+                            });
+                          });
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CustomImageView(
+                              imagePath: user.isSelected ? ImageConstant.imgImage10 : ImageConstant.imgImage7, // Use different image based on isSelected
+                              height: 26.adaptSize,
+                              width: 26.adaptSize,
+                              margin: EdgeInsets.only(top: 4.v),
                             ),
-                          ),
-                        ],
+                            Padding(
+                              padding: EdgeInsets.only(left: 27.h),
+                              child: Text(
+                                user.name,
+                                style: CustomTextStyles.titleLargeGray700.copyWith(color: user.isSelected ? Colors.red : Colors.black), // Change text color based on isSelected
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     }).toList(),
                   ),
@@ -251,7 +273,7 @@ class _RoomScreenState extends State<RoomScreen> {
               initialCameraPosition: _initialCameraPosition,
               mapType: MapType.normal,
               myLocationEnabled: true,
-              markers: _users
+              markers: _users.where((user) => user.email != FirebaseAuth.instance.currentUser?.email)
                   .map((user) => Marker(
                         markerId: MarkerId(user.id),
                         position: LatLng(user.latitude, user.longitude),
@@ -414,6 +436,7 @@ class User {
   String email;
   double latitude;
   double longitude;
+  bool isSelected;
   // Other properties...
 
   User({
@@ -422,6 +445,7 @@ class User {
     required this.email,
     required this.latitude,
     required this.longitude,
+    required this.isSelected,
     // Initialize other properties here...
   });
 
@@ -434,6 +458,7 @@ class User {
       email: data['email'] ?? '',
       latitude: (data['latitude'] ?? 0).toDouble(), // Convert to double
       longitude: (data['longitude'] ?? 0).toDouble(), // Convert to double
+      isSelected: data['isSelected'] ?? false,
       // Map other properties accordingly...
     );
   }
