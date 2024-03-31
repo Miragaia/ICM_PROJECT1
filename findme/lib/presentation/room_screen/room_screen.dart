@@ -350,10 +350,25 @@ class _RoomScreenState extends State<RoomScreen> {
           LatLng(position.latitude, position.longitude),
         ),
       );
+
+      // Update user's location in Firestore
+      String userEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+      if (userEmail.isNotEmpty) {
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(userEmail)
+            .update({
+              'latitude': position.latitude,
+              'longitude': position.longitude,
+            })
+            .then((_) => print('User location updated in Firestore'))
+            .catchError((error) => print('Error updating user location: $error'));
+      }
     } catch (e) {
       print('Error getting user location: $e');
     }
   }
+
 
   void _updateLocationAndDirection() {
     Timer.periodic(Duration(seconds: 2), (Timer timer) {
