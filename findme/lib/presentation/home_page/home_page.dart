@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
       updateRoomId();
     });
   }
-  
+
   void createRoom(String roomName, String location, String image) {
     //nothing done here
   }
@@ -39,33 +39,47 @@ class _HomePageState extends State<HomePage> {
         appBar: _buildAppBar(context),
         body: Column(
           children: [
+            _buildSearchBox(context),
+            SizedBox(height: 20.v),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.h),
+              child: _buildTwentySix(context,
+                  availableRooms: "Available Rooms", showAll: "Show All"),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.only(top: 24.v),
                 child: Column(
                   children: [
-                    _buildSearchBox(context),
                     SizedBox(
-                      height: 425.v,
+                      // height: 425.v,
                       width: double.maxFinite,
                       child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance.collection('rooms').snapshots(),
+                        stream: FirebaseFirestore.instance
+                            .collection('rooms')
+                            .snapshots(),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
                           }
 
                           if (snapshot.hasError) {
-                            return Center(child: Text('Error: ${snapshot.error}'));
+                            return Center(
+                                child: Text('Error: ${snapshot.error}'));
                           }
 
-                          List<Map<String, dynamic>> roomsData = snapshot.data!.docs.map((doc) {
-                            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                          List<Map<String, dynamic>> roomsData =
+                              snapshot.data!.docs.map((doc) {
+                            Map<String, dynamic> data =
+                                doc.data() as Map<String, dynamic>;
                             return {
                               'roomName': data['name'],
                               'location': data['location'],
-                              'usersCount': "1 Users", // For now, consider it as static
-                              'image': ImageConstant.imgDefaulRoom, // For now, consider it as static
+                              'usersCount':
+                                  "1 Users", // For now, consider it as static
+                              'image': ImageConstant
+                                  .imgDefaulRoom, // For now, consider it as static
                             };
                           }).toList();
 
@@ -74,9 +88,11 @@ class _HomePageState extends State<HomePage> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _buildTwentySix(context, availableRooms: "Available Rooms", showAll: "Show All"),
                                 SizedBox(height: 15.v),
-                                _buildHome(context, roomsData),
+                                SingleChildScrollView(
+                                  // Wrap _buildHome with SingleChildScrollView
+                                  child: _buildHome(context, roomsData),
+                                ),
                               ],
                             ),
                           );
@@ -199,42 +215,40 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHome(BuildContext context, List<Map<String, dynamic>> roomsData) {
-    List<Widget> roomsWidgets = [];
-
-    for (int i = 0; i < roomsData.length; i++) {
-      roomsWidgets.add(
-        GestureDetector(
+  Widget _buildHome(
+      BuildContext context, List<Map<String, dynamic>> roomsData) {
+    return ListView.builder(
+      itemCount: roomsData.length,
+      shrinkWrap: true,
+      physics:
+          ClampingScrollPhysics(), // Eita que o ListView tenha um efeito de rebote
+      itemBuilder: (context, index) {
+        return GestureDetector(
           onTap: () {
             showModalBottomSheet(
               context: context,
+              isScrollControlled: true,
               builder: (BuildContext context) {
                 return EnterRoomBottomsheet(
-                  roomName: roomsData[i]['roomName'],
-                  location: roomsData[i]['location'],
-                  usersCount: roomsData[i]['usersCount'],
-                  image: roomsData[i]['image'],
+                  roomName: roomsData[index]['roomName'],
+                  location: roomsData[index]['location'],
+                  usersCount: roomsData[index]['usersCount'],
+                  image: roomsData[index]['image'],
                 );
               },
             );
           },
-          child: HomeItemWidget(
-            roomName: roomsData[i]['roomName'],
-            location: roomsData[i]['location'],
-            usersCount: roomsData[i]['usersCount'],
-            image: roomsData[i]['image'],
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: HomeItemWidget(
+              roomName: roomsData[index]['roomName'],
+              location: roomsData[index]['location'],
+              usersCount: roomsData[index]['usersCount'],
+              image: roomsData[index]['image'],
+            ),
           ),
-        ),
-      );
-
-      // Add a SizedBox after each item, except the last one
-      if (i < roomsData.length - 1) {
-        roomsWidgets.add(SizedBox(height: 10));
-      }
-    }
-
-    return Column(
-      children: roomsWidgets,
+        );
+      },
     );
   }
 
@@ -270,7 +284,10 @@ class _HomePageState extends State<HomePage> {
     try {
       String userEmail = FirebaseAuth.instance.currentUser?.email ?? '';
       if (userEmail.isNotEmpty) {
-        await FirebaseFirestore.instance.collection('users').doc(userEmail).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userEmail)
+            .update({
           'roomId': "",
         });
         print('RoomId updated successfully');

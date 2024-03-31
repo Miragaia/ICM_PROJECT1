@@ -43,6 +43,7 @@ class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Container(
+        height: MediaQuery.of(context).size.height * 0.90,
         padding: EdgeInsets.symmetric(
           horizontal: 11.h,
           vertical: 10.v,
@@ -125,15 +126,16 @@ class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
                 obscureText: true,
               ),
             ),
-            SizedBox(height: 76.v),
+            SizedBox(height: 46.v),
             CustomElevatedButton(
-              height: 88.v,
-              width: 220.h,
+              height: 60.v,
+              width: 120.v,
               text: "Enter Room",
-              buttonTextStyle: theme.textTheme.headlineSmall!,
+              buttonTextStyle: theme.textTheme.headlineMedium,
               onPressed: () async {
                 String password = passwordController.text;
-                bool isPasswordCorrect = await verifyPassword(widget.roomName, password);
+                bool isPasswordCorrect =
+                    await verifyPassword(widget.roomName, password);
                 if (isPasswordCorrect) {
                   Navigator.pushNamed(
                     context,
@@ -151,7 +153,7 @@ class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
                 }
               },
             ),
-            SizedBox(height: 76.v),
+            SizedBox(height: 10.v),
           ],
         ),
       ),
@@ -166,12 +168,13 @@ class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
           .where('password', isEqualTo: password)
           .limit(1)
           .get();
-      
+
       if (querySnapshot.docs.isNotEmpty) {
         // Update the roomId in the user's document in Firestore
-        String roomId = querySnapshot.docs.first.id; // Assuming roomId is the document ID
+        String roomId =
+            querySnapshot.docs.first.id; // Assuming roomId is the document ID
         await updateRoomId(roomId);
-        
+
         return true;
       } else {
         return false;
@@ -186,7 +189,10 @@ class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
     try {
       String userEmail = FirebaseAuth.instance.currentUser?.email ?? '';
       if (userEmail.isNotEmpty) {
-        await FirebaseFirestore.instance.collection('users').doc(userEmail).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userEmail)
+            .update({
           'roomId': roomId,
         });
         print('RoomId updated successfully');
@@ -197,5 +203,4 @@ class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
       print('Error updating roomId: $e');
     }
   }
-
 }
