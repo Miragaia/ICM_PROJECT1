@@ -50,7 +50,6 @@ class _RoomScreenState extends State<RoomScreen> {
     super.initState();
     _checkLocationPermission();
     _updateLocationAndDirection(); // Start updating location and direction
-    _listenForFriendLocation(); // Start listening for friend's location updates
   }
 
   @override
@@ -242,47 +241,28 @@ class _RoomScreenState extends State<RoomScreen> {
         title: AppbarTitle(text: "Room"));
   }
 
-  /// Section Widget
+  
   Widget _buildMap(BuildContext context) {
     return SizedBox(
       height: 250.v,
       width: 340.h,
       child: _isLocationPermissionGranted
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: Container(
-                    color: Colors.white,
-                    child: Stack(
-                      children: [
-                        GoogleMap(
-                          initialCameraPosition: _initialCameraPosition,
-                          mapType: MapType.normal,
-                          myLocationEnabled:
-                              true, // Enable showing the user's location with a blue dot
-                          markers: _friendLocation != null
-                              ? {
-                                  Marker(
-                                    markerId: MarkerId('Friend'),
-                                    position: _friendLocation,
-                                    icon: BitmapDescriptor.defaultMarkerWithHue(
-                                        BitmapDescriptor.hueGreen),
-                                  )
-                                }
-                              : {},
-                          onMapCreated: (GoogleMapController controller) {
-                            setState(() {
-                              _controller = controller;
-                            });
-                            _getUserLocation();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          ? GoogleMap(
+              initialCameraPosition: _initialCameraPosition,
+              mapType: MapType.normal,
+              myLocationEnabled: true,
+              markers: _users
+                  .map((user) => Marker(
+                        markerId: MarkerId(user.id),
+                        position: LatLng(user.latitude, user.longitude),
+                      ))
+                  .toSet(),
+              onMapCreated: (GoogleMapController controller) {
+                setState(() {
+                  _controller = controller;
+                });
+                _getUserLocation();
+              },
             )
           : Center(
               child: CircularProgressIndicator(),
@@ -377,23 +357,6 @@ class _RoomScreenState extends State<RoomScreen> {
     });
   }
 
-  void _listenForFriendLocation() {
-    FirebaseFirestore.instance
-        .collection('Users')
-        .doc('friend1')
-        .snapshots()
-        .listen((snapshot) {
-      if (snapshot.exists) {
-        double latitude = snapshot['latitude'];
-        double longitude = snapshot['longitude'];
-        setState(() {
-          _friendLocation = LatLng(latitude, longitude);
-          _calculateDirection();
-        });
-      }
-    });
-  }
-
   double bearingBetweenCoordinates(LatLng from, LatLng to) {
     double lat1 = from.latitude * pi / 180.0;
     double lon1 = from.longitude * pi / 180.0;
@@ -450,7 +413,7 @@ class User {
   String name;
   String email;
   double latitude;
-  double longitude; // Add longitude property
+  double longitude;
   // Other properties...
 
   User({
@@ -458,14 +421,13 @@ class User {
     required this.name,
     required this.email,
     required this.latitude,
-    required this.longitude, // Add required longitude parameter
+    required this.longitude,
     // Initialize other properties here...
   });
 
   // Factory method to construct User object from DocumentSnapshot
   factory User.fromSnapshot(DocumentSnapshot snapshot) {
     Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-    print('Data from Firestore: $data'); // Add this line to print the data
     return User(
       id: snapshot.id,
       name: data['username'] ?? '',
