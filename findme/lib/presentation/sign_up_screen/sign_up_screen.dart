@@ -300,6 +300,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'latitude': '', // Initialize with empty string
         'longitude': '', // Initialize with empty string
         'roomId': '', // Initialize with empty string
+        'isSelected': false, // Initialize with false
       });
       print('User data updated successfully');
     } catch (e) {
