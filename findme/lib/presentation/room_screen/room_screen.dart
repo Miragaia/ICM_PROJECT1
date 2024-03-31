@@ -251,7 +251,7 @@ class _RoomScreenState extends State<RoomScreen> {
               initialCameraPosition: _initialCameraPosition,
               mapType: MapType.normal,
               myLocationEnabled: true,
-              markers: _users
+              markers: _users.where((user) => user.email != FirebaseAuth.instance.currentUser?.email)
                   .map((user) => Marker(
                         markerId: MarkerId(user.id),
                         position: LatLng(user.latitude, user.longitude),
