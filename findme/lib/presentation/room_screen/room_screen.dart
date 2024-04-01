@@ -40,6 +40,7 @@ class _RoomScreenState extends State<RoomScreen> {
 
   LatLng _friendLocation = LatLng(0.0, 0.0); // Friend's location
   String _direction = ''; // Direction to friend's location
+  String _directionMeters = ''; // Distance to friend's location
   String _latitude = '';
   String _longitude = '';
 
@@ -238,18 +239,25 @@ class _RoomScreenState extends State<RoomScreen> {
                   ),
                   SizedBox(height: 20.v),
                   Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                          height: 40.v,
-                          width: 154.h,
-                          margin: EdgeInsets.only(right: 81.h),
-                          child:
-                              Stack(alignment: Alignment.topCenter, children: [
-                            Align(
-                                alignment: Alignment.topCenter,
-                                child: Text("12 meters away",
-                                    style: CustomTextStyles.titleLargeGray700))
-                          ]))),
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      height: 40.v,
+                      width: 154.h,
+                      margin: EdgeInsets.only(right: 81.h),
+                      child: Stack(
+                        alignment: Alignment.topCenter,
+                        children: [
+                          Align(
+                            alignment: Alignment.topCenter,
+                            child: Text(
+                              _directionMeters, // Display the dynamically calculated distance
+                              style: CustomTextStyles.titleLargeGray700,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
                 ]))));
   }
 
@@ -386,6 +394,7 @@ class _RoomScreenState extends State<RoomScreen> {
     Timer.periodic(Duration(seconds: 2), (Timer timer) {
       _getUserLocation();
       _calculateDirection();
+      _calculateDirectionMeters();
     });
   }
 
@@ -402,6 +411,43 @@ class _RoomScreenState extends State<RoomScreen> {
 
     double bearing = atan2(y, x) * 180.0 / pi;
     return (bearing + 360) % 360;
+  }
+
+  void _calculateDirectionMeters() {
+    // Get the current user's location
+    double userLatitude = double.parse(_latitude);
+    double userLongitude = double.parse(_longitude);
+
+    // Find the selected friend's location
+    User selectedFriend = _users.firstWhere((user) => user.isSelected, orElse: () => User(id: '', name: '', email: '', latitude: 0, longitude: 0, isSelected: false));
+    double friendLatitude = selectedFriend.latitude;
+    double friendLongitude = selectedFriend.longitude;
+
+    // Calculate the distance between the current user and the selected friend
+    double distance = _calculateDistance(userLatitude, userLongitude, friendLatitude, friendLongitude);
+
+    // Update the direction with the distance
+    _directionMeters = '${distance.toStringAsFixed(2)} meters away';
+
+    setState(() {});
+  }
+
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double radius = 6371; // Earth's radius in km
+
+    double dLat = _degreesToRadians(lat2 - lat1);
+    double dLon = _degreesToRadians(lon2 - lon1);
+
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
+            sin(dLon / 2) * sin(dLon / 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    double distance = radius * c * 1000; // Convert to meters
+    return distance;
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * pi / 180;
   }
 
   void _calculateDirection() {
