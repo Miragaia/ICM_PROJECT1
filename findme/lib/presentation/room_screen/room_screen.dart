@@ -278,10 +278,15 @@ class _RoomScreenState extends State<RoomScreen> {
               mapType: MapType.normal,
               myLocationEnabled: true,
               markers: _users.where((user) => user.email != FirebaseAuth.instance.currentUser?.email)
-                  .map((user) => Marker(
-                        markerId: MarkerId(user.id),
-                        position: LatLng(user.latitude, user.longitude),
-                      ))
+                  .map((user) {
+                    return Marker(
+                      markerId: MarkerId(user.id),
+                      position: LatLng(user.latitude, user.longitude),
+                      icon: user.isSelected
+                          ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen)
+                          : BitmapDescriptor.defaultMarker,
+                    );
+                  })
                   .toSet(),
               onMapCreated: (GoogleMapController controller) {
                 setState(() {
@@ -295,6 +300,7 @@ class _RoomScreenState extends State<RoomScreen> {
             ),
     );
   }
+
 
   Future<void> _checkLocationPermission() async {
     var permissionStatus = await Permission.location.status;
