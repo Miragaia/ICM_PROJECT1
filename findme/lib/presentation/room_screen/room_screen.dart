@@ -59,7 +59,6 @@ class _RoomScreenState extends State<RoomScreen> {
     _fetchUsers();
   }
 
-
   void _fetchUsers() {
     try {
       final Map<String, dynamic> args =
@@ -89,27 +88,25 @@ class _RoomScreenState extends State<RoomScreen> {
     }
   }
 
-
   // Define a map to store the angles for each direction
-final Map<String, double> directionAngles = {
-  'North': 0,
-  'North Northeast': pi / 8,
-  'Northeast': pi / 4,
-  'East Northeast': 3 * pi / 8,
-  'East': pi / 2,
-  'East Southeast': 5 * pi / 8,
-  'Southeast': 3 * pi / 4,
-  'South Southeast': 7 * pi / 8,
-  'South': pi,
-  'South Southwest': 9 * pi / 8,
-  'Southwest': 5 * pi / 4,
-  'West Southwest': 11 * pi / 8,
-  'West': 3 * pi / 2,
-  'West Northwest': 13 * pi / 8,
-  'Northwest': 7 * pi / 4,
-  'North Northwest': 15 * pi / 8,
-};
-
+  final Map<String, double> directionAngles = {
+    'North': 0,
+    'North Northeast': pi / 8,
+    'Northeast': pi / 4,
+    'East Northeast': 3 * pi / 8,
+    'East': pi / 2,
+    'East Southeast': 5 * pi / 8,
+    'Southeast': 3 * pi / 4,
+    'South Southeast': 7 * pi / 8,
+    'South': pi,
+    'South Southwest': 9 * pi / 8,
+    'Southwest': 5 * pi / 4,
+    'West Southwest': 11 * pi / 8,
+    'West': 3 * pi / 2,
+    'West Northwest': 13 * pi / 8,
+    'Northwest': 7 * pi / 4,
+    'North Northwest': 15 * pi / 8,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +124,8 @@ final Map<String, double> directionAngles = {
                 padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 7.v),
                 child: Column(children: [
                   Container(
-                    height: 70.adaptSize,
-                    width: 70.adaptSize,
+                    height: 50.adaptSize,
+                    width: 50.adaptSize,
                     padding: EdgeInsets.symmetric(horizontal: 1.h),
                     decoration: AppDecoration.fillGreen.copyWith(
                       borderRadius: BorderRadiusStyle.circleBorder22,
@@ -186,52 +183,76 @@ final Map<String, double> directionAngles = {
                   SizedBox(height: 1.v),
                   Text("Select the User to follow",
                       style: theme.textTheme.titleSmall),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: _users.where((user) => user.email != FirebaseAuth.instance.currentUser?.email).map((user) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            // Set isSelected to true for the tapped user and false for others
-                            _users.forEach((currentUser) {
-                              currentUser.isSelected = (currentUser == user);
-                              // Update isSelected field in Firestore
-                              FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(currentUser.id)
-                                  .update({'isSelected': currentUser.isSelected})
-                                  .then((_) => print('User isSelected updated in Firestore'))
-                                  .catchError((error) => print('Error updating user isSelected: $error'));
+                  SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: _users
+                          .where((user) =>
+                              user.email !=
+                              FirebaseAuth.instance.currentUser?.email)
+                          .map((user) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              // Set isSelected to true for the tapped user and false for others
+                              _users.forEach((currentUser) {
+                                currentUser.isSelected = (currentUser == user);
+                                // Update isSelected field in Firestore
+                                FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(currentUser.id)
+                                    .update(
+                                        {'isSelected': currentUser.isSelected})
+                                    .then((_) => print(
+                                        'User isSelected updated in Firestore'))
+                                    .catchError((error) => print(
+                                        'Error updating user isSelected: $error'));
+                              });
                             });
-                          });
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CustomImageView(
-                              imagePath: user.isSelected ? ImageConstant.imgImage10 : ImageConstant.imgImage7, // Use different image based on isSelected
-                              height: 26.adaptSize,
-                              width: 26.adaptSize,
-                              margin: EdgeInsets.only(top: 4.v),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 27.h),
-                              child: Text(
-                                user.name,
-                                style: CustomTextStyles.titleLargeGray700.copyWith(color: user.isSelected ? Colors.red : Colors.black), // Change text color based on isSelected
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CustomImageView(
+                                imagePath: user.isSelected
+                                    ? ImageConstant.imgImage10
+                                    : ImageConstant
+                                        .imgImage7, // Use different image based on isSelected
+                                height: 26.adaptSize,
+                                width: 26.adaptSize,
+                                margin: EdgeInsets.only(top: 4.v),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                              Padding(
+                                padding: EdgeInsets.only(left: 27.h),
+                                child: Text(
+                                  user.name,
+                                  style: CustomTextStyles.titleLargeGray700
+                                      .copyWith(
+                                          color: user.isSelected
+                                              ? Colors.red
+                                              : Colors
+                                                  .black), // Change text color based on isSelected
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
+
                   SizedBox(height: 10.v),
-                  Text("Direction to Friend: $_direction",
-                      style: CustomTextStyles.titleLargeInter),
-                  SizedBox(height: 6.v),
+                  Text(
+                    "Direction to Friend: $_direction",
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 18,
+                        ),
+                  ),
                   Transform.rotate(
-                    angle: directionAngles.containsKey(_direction) ? directionAngles[_direction]! : 0,
+                    angle: directionAngles.containsKey(_direction)
+                        ? directionAngles[_direction]!
+                        : 0,
                     child: CustomImageView(
                       imagePath: ImageConstant.imgImage11,
                       height: 50.v,
@@ -258,8 +279,11 @@ final Map<String, double> directionAngles = {
                                   alignment: Alignment.topCenter,
                                   child: Text(
                                     _directionMeters,
-                                    style: CustomTextStyles.titleLargeGray700.copyWith(
-                                      fontSize: _directionMeters.length > 10 ? 14.0 : 16.0, // Adjust font size based on text length
+                                    style: CustomTextStyles.titleLargeGray700
+                                        .copyWith(
+                                      fontSize: _directionMeters.length > 10
+                                          ? 14.0
+                                          : 16.0, // Adjust font size based on text length
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -288,7 +312,6 @@ final Map<String, double> directionAngles = {
         title: AppbarTitle(text: "Room"));
   }
 
-  
   Widget _buildMap(BuildContext context) {
     return SizedBox(
       height: 250.v,
@@ -298,17 +321,19 @@ final Map<String, double> directionAngles = {
               initialCameraPosition: _initialCameraPosition,
               mapType: MapType.normal,
               myLocationEnabled: true,
-              markers: _users.where((user) => user.email != FirebaseAuth.instance.currentUser?.email)
+              markers: _users
+                  .where((user) =>
+                      user.email != FirebaseAuth.instance.currentUser?.email)
                   .map((user) {
-                    return Marker(
-                      markerId: MarkerId(user.id),
-                      position: LatLng(user.latitude, user.longitude),
-                      icon: user.isSelected
-                          ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen)
-                          : BitmapDescriptor.defaultMarker,
-                    );
-                  })
-                  .toSet(),
+                return Marker(
+                  markerId: MarkerId(user.id),
+                  position: LatLng(user.latitude, user.longitude),
+                  icon: user.isSelected
+                      ? BitmapDescriptor.defaultMarkerWithHue(
+                          BitmapDescriptor.hueGreen)
+                      : BitmapDescriptor.defaultMarker,
+                );
+              }).toSet(),
               onMapCreated: (GoogleMapController controller) {
                 setState(() {
                   _controller = controller;
@@ -321,7 +346,6 @@ final Map<String, double> directionAngles = {
             ),
     );
   }
-
 
   Future<void> _checkLocationPermission() async {
     var permissionStatus = await Permission.location.status;
@@ -395,13 +419,13 @@ final Map<String, double> directionAngles = {
               'longitude': position.longitude,
             })
             .then((_) => print('User location updated in Firestore'))
-            .catchError((error) => print('Error updating user location: $error'));
+            .catchError(
+                (error) => print('Error updating user location: $error'));
       }
     } catch (e) {
       print('Error getting user location: $e');
     }
   }
-
 
   void _updateLocationAndDirection() {
     Timer.periodic(Duration(seconds: 2), (Timer timer) {
@@ -432,34 +456,46 @@ final Map<String, double> directionAngles = {
     double userLongitude = double.parse(_longitude);
 
     // Find the selected friend's location
-    User selectedFriend = _users.firstWhere((user) => user.isSelected, orElse: () => User(id: '', name: '', email: '', latitude: 0, longitude: 0, isSelected: false));
+    User selectedFriend = _users.firstWhere((user) => user.isSelected,
+        orElse: () => User(
+            id: '',
+            name: '',
+            email: '',
+            latitude: 0,
+            longitude: 0,
+            isSelected: false));
     double friendLatitude = selectedFriend.latitude;
     double friendLongitude = selectedFriend.longitude;
 
     // Calculate the distance between the current user and the selected friend
-    double distance = _calculateDistance(userLatitude, userLongitude, friendLatitude, friendLongitude);
+    double distance = _calculateDistance(
+        userLatitude, userLongitude, friendLatitude, friendLongitude);
 
     // Convert distance to kilometers if it exceeds 1000 meters
     if (distance >= 1000) {
       distance /= 1000; // Convert meters to kilometers
-      _directionMeters = '${distance.toStringAsFixed(2)} km away'; // Format to display only two decimal units
+      _directionMeters =
+          '${distance.toStringAsFixed(2)} km away'; // Format to display only two decimal units
     } else {
-      _directionMeters = '${distance.toStringAsFixed(2)} meters away'; // Format to display only two decimal units
+      _directionMeters =
+          '${distance.toStringAsFixed(2)} meters away'; // Format to display only two decimal units
     }
 
     setState(() {});
   }
 
-
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  double _calculateDistance(
+      double lat1, double lon1, double lat2, double lon2) {
     const double radius = 6371; // Earth's radius in km
 
     double dLat = _degreesToRadians(lat2 - lat1);
     double dLon = _degreesToRadians(lon2 - lon1);
 
     double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
-            sin(dLon / 2) * sin(dLon / 2);
+        cos(_degreesToRadians(lat1)) *
+            cos(_degreesToRadians(lat2)) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     double distance = radius * c * 1000; // Convert to meters
     return distance;
@@ -515,7 +551,6 @@ final Map<String, double> directionAngles = {
 
     setState(() {});
   }
-
 
   onTapArrowLeft(BuildContext context) {
     Navigator.pop(context);
