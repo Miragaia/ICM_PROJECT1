@@ -73,8 +73,11 @@ class _RoomScreenState extends State<RoomScreen> {
         setState(() {
           _users = usersSnapshot.docs.map((doc) {
             User user = User.fromSnapshot(doc);
-            // Set isSelected to true for the first user, and false for others
-            user.isSelected = _users.isEmpty ? true : false;
+            // Preserve the isSelected property set by user interaction
+            User? existingUser = _users.firstWhere(
+                (existingUser) => existingUser.id == user.id,
+                orElse: () => user);
+            user.isSelected = existingUser.isSelected;
             return user;
           }).toList();
         });
@@ -84,6 +87,7 @@ class _RoomScreenState extends State<RoomScreen> {
       print('Error fetching users: $e');
     }
   }
+
 
 
 
