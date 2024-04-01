@@ -39,6 +39,8 @@ class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
     super.dispose();
   }
 
+  bool _obscureText = true;
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -117,13 +119,32 @@ class _EnterRoomBottomsheetState extends State<EnterRoomBottomsheet> {
             SizedBox(height: 42.v),
             Padding(
               padding: EdgeInsets.only(left: 18.h),
-              child: CustomTextFormField(
-                controller: passwordController,
-                hintText: "Insert Password",
-                textInputAction: TextInputAction.done,
-                textInputType: TextInputType.visiblePassword,
-                alignment: Alignment.centerRight,
-                obscureText: true,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CustomTextFormField(
+                      controller: passwordController,
+                      hintText: "Insert Password",
+                      textInputAction: TextInputAction.done,
+                      textInputType: TextInputType.visiblePassword,
+                      alignment: Alignment.centerRight,
+                      obscureText:
+                          _obscureText, // Initially obscureText is true
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey, // You can customize the color here
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText =
+                            !_obscureText; // Toggle the obscureText value
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 46.v),
