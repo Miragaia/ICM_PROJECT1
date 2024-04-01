@@ -247,13 +247,23 @@ class _RoomScreenState extends State<RoomScreen> {
                       child: Stack(
                         alignment: Alignment.topCenter,
                         children: [
-                          Align(
-                            alignment: Alignment.topCenter,
-                            child: Text(
-                              _directionMeters, // Display the dynamically calculated distance
-                              style: CustomTextStyles.titleLargeGray700,
-                            ),
-                          )
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: Text(
+                                    _directionMeters,
+                                    style: CustomTextStyles.titleLargeGray700.copyWith(
+                                      fontSize: _directionMeters.length > 10 ? 14.0 : 16.0, // Adjust font size based on text length
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -426,11 +436,17 @@ class _RoomScreenState extends State<RoomScreen> {
     // Calculate the distance between the current user and the selected friend
     double distance = _calculateDistance(userLatitude, userLongitude, friendLatitude, friendLongitude);
 
-    // Update the direction with the distance
-    _directionMeters = '${distance.toStringAsFixed(2)} meters away';
+    // Convert distance to kilometers if it exceeds 1000 meters
+    if (distance >= 1000) {
+      distance /= 1000; // Convert meters to kilometers
+      _directionMeters = '${distance.toStringAsFixed(2)} km away'; // Format to display only two decimal units
+    } else {
+      _directionMeters = '${distance.toStringAsFixed(2)} meters away'; // Format to display only two decimal units
+    }
 
     setState(() {});
   }
+
 
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const double radius = 6371; // Earth's radius in km
