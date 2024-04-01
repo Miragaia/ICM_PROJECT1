@@ -52,7 +52,6 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     SizedBox(
-                      // height: 425.v,
                       width: double.maxFinite,
                       child: StreamBuilder<QuerySnapshot>(
                         stream: FirebaseFirestore.instance
@@ -69,32 +68,36 @@ class _HomePageState extends State<HomePage> {
                                 child: Text('Error: ${snapshot.error}'));
                           }
 
-                          List<Map<String, dynamic>> roomsData =
-                              snapshot.data!.docs.map((doc) {
-                            Map<String, dynamic> data =
-                                doc.data() as Map<String, dynamic>;
-                            return {
-                              'roomName': data['name'],
-                              'location': data['location'],
-                              'usersCount':
-                                  "1 Users", // For now, consider it as static
-                              'image': ImageConstant
-                                  .imgDefaulRoom, // For now, consider it as static
-                            };
-                          }).toList();
+                          return FutureBuilder<List<Map<String, dynamic>>>(
+                            future: _fetchRoomsData(snapshot.data!.docs),
+                            builder: (context, roomsSnapshot) {
+                              if (roomsSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Center(
+                                    child: CircularProgressIndicator());
+                              }
 
-                          return Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.h),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(height: 15.v),
-                                SingleChildScrollView(
-                                  // Wrap _buildHome with SingleChildScrollView
-                                  child: _buildHome(context, roomsData),
+                              if (roomsSnapshot.hasError) {
+                                return Center(
+                                    child: Text(
+                                        'Error: ${roomsSnapshot.error}'));
+                              }
+
+                              return Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 20.h),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(height: 15.v),
+                                    SingleChildScrollView(
+                                      // Wrap _buildHome with SingleChildScrollView
+                                      child: _buildHome(
+                                          context, roomsSnapshot.data!),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -109,6 +112,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 
   Widget _buildBottomContainer(BuildContext context) {
     return Container(
@@ -157,6 +161,47 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  Widget _buildRoomsList(BuildContext context, List<DocumentSnapshot> docs) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _fetchRoomsData(docs),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        return _buildHome(context, snapshot.data!);
+      },
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchRoomsData(
+      List<DocumentSnapshot> docs) async {
+    List<Map<String, dynamic>> roomsData = [];
+    for (var doc in docs) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      String roomName = data['name'];
+      int usersCount = 0;
+
+      QuerySnapshot usersSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('roomId', isEqualTo: roomName)
+          .get();
+      usersCount = usersSnapshot.size;
+
+      roomsData.add({
+        'roomName': roomName,
+        'location': data['location'],
+        'usersCount': '$usersCount Users',
+        'image': ImageConstant.imgDefaulRoom,
+      });
+    }
+    return roomsData;
   }
 
   Widget _buildBottomItem(
