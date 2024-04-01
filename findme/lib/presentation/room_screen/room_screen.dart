@@ -90,7 +90,25 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
 
-
+  // Define a map to store the angles for each direction
+final Map<String, double> directionAngles = {
+  'North': 0,
+  'North Northeast': pi / 8,
+  'Northeast': pi / 4,
+  'East Northeast': 3 * pi / 8,
+  'East': pi / 2,
+  'East Southeast': 5 * pi / 8,
+  'Southeast': 3 * pi / 4,
+  'South Southeast': 7 * pi / 8,
+  'South': pi,
+  'South Southwest': 9 * pi / 8,
+  'Southwest': 5 * pi / 4,
+  'West Southwest': 11 * pi / 8,
+  'West': 3 * pi / 2,
+  'West Northwest': 13 * pi / 8,
+  'Northwest': 7 * pi / 4,
+  'North Northwest': 15 * pi / 8,
+};
 
 
   @override
@@ -213,29 +231,14 @@ class _RoomScreenState extends State<RoomScreen> {
                       style: CustomTextStyles.titleLargeInter),
                   SizedBox(height: 6.v),
                   Transform.rotate(
-                    angle: (_direction == 'North')
-                        ? 0
-                        : (_direction == 'Northeast')
-                            ? pi / 4
-                            : (_direction == 'East')
-                                ? pi / 2
-                                : (_direction == 'Southeast')
-                                    ? 3 * pi / 4
-                                    : (_direction == 'South')
-                                        ? pi
-                                        : (_direction == 'Southwest')
-                                            ? 5 * pi / 4
-                                            : (_direction == 'West')
-                                                ? 3 * pi / 2
-                                                : (_direction == 'Northwest')
-                                                    ? 7 * pi / 4
-                                                    : 0,
+                    angle: directionAngles.containsKey(_direction) ? directionAngles[_direction]! : 0,
                     child: CustomImageView(
-                        imagePath: ImageConstant.imgImage11,
-                        height: 50.v,
-                        width: 50.h,
-                        alignment: Alignment.centerRight,
-                        margin: EdgeInsets.only(right: 119.h)),
+                      imagePath: ImageConstant.imgImage11,
+                      height: 50.v,
+                      width: 50.h,
+                      alignment: Alignment.centerRight,
+                      margin: EdgeInsets.only(right: 119.h),
+                    ),
                   ),
                   SizedBox(height: 20.v),
                   Align(
@@ -474,28 +477,45 @@ class _RoomScreenState extends State<RoomScreen> {
     );
 
     // Convert degrees to cardinal direction
-    if (bearing >= 0 && bearing < 22.5) {
+    if (bearing >= 0 && bearing < 11.25) {
       _direction = 'North';
-    } else if (bearing >= 22.5 && bearing < 67.5) {
+    } else if (bearing >= 11.25 && bearing < 33.75) {
+      _direction = 'North Northeast';
+    } else if (bearing >= 33.75 && bearing < 56.25) {
       _direction = 'Northeast';
-    } else if (bearing >= 67.5 && bearing < 112.5) {
+    } else if (bearing >= 56.25 && bearing < 78.75) {
+      _direction = 'East Northeast';
+    } else if (bearing >= 78.75 && bearing < 101.25) {
       _direction = 'East';
-    } else if (bearing >= 112.5 && bearing < 157.5) {
+    } else if (bearing >= 101.25 && bearing < 123.75) {
+      _direction = 'East Southeast';
+    } else if (bearing >= 123.75 && bearing < 146.25) {
       _direction = 'Southeast';
-    } else if (bearing >= 157.5 && bearing < 202.5) {
+    } else if (bearing >= 146.25 && bearing < 168.75) {
+      _direction = 'South Southeast';
+    } else if (bearing >= 168.75 && bearing < 191.25) {
       _direction = 'South';
-    } else if (bearing >= 202.5 && bearing < 247.5) {
+    } else if (bearing >= 191.25 && bearing < 213.75) {
+      _direction = 'South Southwest';
+    } else if (bearing >= 213.75 && bearing < 236.25) {
       _direction = 'Southwest';
-    } else if (bearing >= 247.5 && bearing < 292.5) {
+    } else if (bearing >= 236.25 && bearing < 258.75) {
+      _direction = 'West Southwest';
+    } else if (bearing >= 258.75 && bearing < 281.25) {
       _direction = 'West';
-    } else if (bearing >= 292.5 && bearing < 337.5) {
+    } else if (bearing >= 281.25 && bearing < 303.75) {
+      _direction = 'West Northwest';
+    } else if (bearing >= 303.75 && bearing < 326.25) {
       _direction = 'Northwest';
+    } else if (bearing >= 326.25 && bearing < 348.75) {
+      _direction = 'North Northwest';
     } else {
       _direction = 'North';
     }
 
     setState(() {});
   }
+
 
   onTapArrowLeft(BuildContext context) {
     Navigator.pop(context);
