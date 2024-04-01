@@ -79,8 +79,8 @@ class _HomePageState extends State<HomePage> {
 
                               if (roomsSnapshot.hasError) {
                                 return Center(
-                                    child: Text(
-                                        'Error: ${roomsSnapshot.error}'));
+                                    child:
+                                        Text('Error: ${roomsSnapshot.error}'));
                               }
 
                               return Padding(
@@ -112,7 +112,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 
   Widget _buildBottomContainer(BuildContext context) {
     return Container(
@@ -151,12 +150,6 @@ class _HomePageState extends State<HomePage> {
             label: 'Profile',
             icon: Icons.person,
             onTap: () => Navigator.pushNamed(context, AppRoutes.profileScreen),
-          ),
-          _buildBottomItem(
-            context,
-            label: 'Settings',
-            icon: Icons.settings,
-            onTap: () => Navigator.pushNamed(context, AppRoutes.homePage),
           ),
         ],
       ),

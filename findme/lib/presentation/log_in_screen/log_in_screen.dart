@@ -16,13 +16,12 @@ class LogInScreen extends StatefulWidget {
 }
 
 class _LogInScreenState extends State<LogInScreen> {
-
   final FirebaseAuthService _auth = FirebaseAuthService();
-  
+
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+  bool _isObscured = true;
 
   @override
   void dispose() {
@@ -144,19 +143,29 @@ class _LogInScreenState extends State<LogInScreen> {
                       prefixConstraints: BoxConstraints(
                         maxHeight: 54.v,
                       ),
-                      suffix: Container(
-                        margin: EdgeInsets.fromLTRB(30.h, 21.v, 20.h, 20.v),
-                        child: CustomImageView(
-                          imagePath: ImageConstant.imgEyeslash,
-                          height: 13.v,
-                          width: 16.h,
+                      obscureText: _isObscured,
+                      contentPadding: EdgeInsets.symmetric(vertical: 15.v),
+                      suffix: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isObscured =
+                                !_isObscured; // Inverte o estado da visibilidade da senha
+                          });
+                        },
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(30.h, 21.v, 20.h, 20.v),
+                          child: CustomImageView(
+                            imagePath: _isObscured
+                                ? ImageConstant.imgEyeslash
+                                : ImageConstant.imgEyeslash,
+                            height: 13.v,
+                            width: 16.h,
+                          ),
                         ),
                       ),
                       suffixConstraints: BoxConstraints(
                         maxHeight: 54.v,
                       ),
-                      obscureText: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 15.v),
                     ),
                     SizedBox(height: 8.v),
                     Align(
@@ -274,10 +283,8 @@ class _LogInScreenState extends State<LogInScreen> {
       Navigator.push(context, MaterialPageRoute(builder: (context) {
         return HomePage();
       }));
-    }
-    else {
+    } else {
       print("sign in failed");
     }
   }
-
 }
