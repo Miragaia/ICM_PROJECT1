@@ -23,6 +23,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'dart:math';
+import '../home_page/home_page.dart';
 
 class RoomScreen extends StatefulWidget {
   @override
@@ -306,7 +307,9 @@ class _RoomScreenState extends State<RoomScreen> {
             imagePath: ImageConstant.imgArrowLeft,
             margin: EdgeInsets.only(left: 20.h, top: 17.v, bottom: 17.v),
             onTap: () {
-              onTapArrowLeft(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                return HomePage();
+              }));
             }),
         centerTitle: true,
         title: AppbarTitle(text: "Room"));
