@@ -188,7 +188,7 @@ class _RoomScreenState extends State<RoomScreen> {
                       style: theme.textTheme.titleSmall),
 
                   Container(
-                    height: 80,
+                    height: 90,
                     child: SingleChildScrollView(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -226,15 +226,15 @@ class _RoomScreenState extends State<RoomScreen> {
                                       ? ImageConstant.imgImage10
                                       : ImageConstant
                                           .imgImage7, // Use different image based on isSelected
-                                  height: 26.adaptSize,
-                                  width: 26.adaptSize,
+                                  height: 20.adaptSize,
+                                  width: 20.adaptSize,
                                   margin: EdgeInsets.only(top: 4.v),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.only(left: 27.h),
                                   child: Text(
                                     user.name,
-                                    style: CustomTextStyles.titleLargeGray700
+                                    style: CustomTextStyles.titleMediumGray700
                                         .copyWith(
                                             color: user.isSelected
                                                 ? Colors.red
@@ -251,30 +251,36 @@ class _RoomScreenState extends State<RoomScreen> {
                   ),
 
                   SizedBox(height: 10.v),
-                  Text(
-                    "Direction to Friend: $_direction",
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 18,
-                        ),
-                  ),
-                  Transform.rotate(
-                    angle: directionAngles.containsKey(_direction)
-                        ? directionAngles[_direction]!
-                        : 0,
-                    child: CustomImageView(
-                      imagePath: ImageConstant.imgImage11,
-                      height: 50.v,
-                      width: 50.h,
-                      alignment: Alignment.centerRight,
-                      margin: EdgeInsets.only(right: 119.h),
+                  Container(
+                    height: 18,
+                    child: Text(
+                      "Direction to Friend: $_direction",
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 18,
+                          ),
                     ),
                   ),
-                  SizedBox(height: 20.v),
+                  Container(
+                    height: 45,
+                    child: Transform.rotate(
+                      angle: directionAngles.containsKey(_direction)
+                          ? directionAngles[_direction]!
+                          : 0,
+                      child: CustomImageView(
+                        imagePath: ImageConstant.imgImage11,
+                        height: 40.v,
+                        width: 40.h,
+                        alignment: Alignment.centerRight,
+                        margin: EdgeInsets.only(right: 119.h),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 40.v),
                   Align(
                     alignment: Alignment.centerRight,
                     child: Container(
-                      height: 40.v,
+                      height: 30.v,
                       width: 154.h,
                       margin: EdgeInsets.only(right: 81.h),
                       child: Stack(

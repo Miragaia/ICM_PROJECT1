@@ -40,7 +40,11 @@ class CustomTextStyles {
   // Title text style
   static get titleLargeGray700 => theme.textTheme.titleLarge!.copyWith(
         color: appTheme.gray700,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w300,
+      );
+  static get titleMediumGray700 => theme.textTheme.titleLarge!.copyWith(
+        color: appTheme.gray700,
+        fontWeight: FontWeight.w300,
       );
   static get titleLargeInter => theme.textTheme.titleLarge!.inter.copyWith(
         fontSize: 23.fSize,
