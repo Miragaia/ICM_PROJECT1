@@ -268,9 +268,7 @@ class _RoomScreenState extends State<RoomScreen> {
                     } else {
                       // Once the future completes successfully, use the result to rotate the arrow
                       return Transform.rotate(
-                        angle: directionAngles.containsKey(_direction)
-                            ? directionAngles[_direction]!
-                            : 0,
+                        angle: snapshot.data ?? 0,
                         origin: Offset(20.h,
                             20.v), // Defina o ponto de origem para o centro da imagem
                         child: CustomImageView(
