@@ -12,6 +12,8 @@ import 'dart:math';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_compass/flutter_compass.dart';
+
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -44,6 +46,7 @@ class _RoomScreenState extends State<RoomScreen> {
   String _directionMeters = ''; // Distance to friend's location
   String _latitude = '';
   String _longitude = '';
+  double? _arrowRotation;
 
   bool _isLocationPermissionGranted = false;
 
@@ -118,200 +121,192 @@ class _RoomScreenState extends State<RoomScreen> {
     final String usersCount = args['usersCount'];
     final String image = args['image'];
     return SafeArea(
-        child: Scaffold(
-            appBar: _buildAppBar(context),
-            body: Container(
-                width: double.maxFinite,
-                padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 7.v),
-                child: Column(children: [
-                  Container(
-                    height: 50.adaptSize,
-                    width: 50.adaptSize,
-                    padding: EdgeInsets.symmetric(horizontal: 1.h),
-                    decoration: AppDecoration.fillGreen.copyWith(
-                      borderRadius: BorderRadiusStyle.circleBorder22,
-                    ),
-                    child: CustomImageView(
-                      imagePath: image, // Use the passed image path
-                      height: 67.adaptSize,
-                      width: 67.adaptSize,
-                      radius: BorderRadius.circular(15.h),
-                      alignment: Alignment.topCenter,
-                    ),
+      child: Scaffold(
+        appBar: _buildAppBar(context),
+        body: Container(
+          width: double.maxFinite,
+          padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 7.v),
+          child: Column(
+            children: [
+              Container(
+                height: 50.adaptSize,
+                width: 50.adaptSize,
+                padding: EdgeInsets.symmetric(horizontal: 1.h),
+                decoration: AppDecoration.fillGreen.copyWith(
+                  borderRadius: BorderRadiusStyle.circleBorder22,
+                ),
+                child: CustomImageView(
+                  imagePath: image,
+                  height: 67.adaptSize,
+                  width: 67.adaptSize,
+                  radius: BorderRadius.circular(15.h),
+                  alignment: Alignment.topCenter,
+                ),
+              ),
+              Text(roomName, style: theme.textTheme.titleLarge),
+              SizedBox(height: 4.v),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomImageView(
+                    imagePath: ImageConstant.imgLocation,
+                    height: 18.adaptSize,
+                    width: 18.adaptSize,
+                    margin: EdgeInsets.only(bottom: 3.v),
                   ),
-                  Text(roomName,
-                      style: theme
-                          .textTheme.titleLarge), // Use the passed roomName
-                  SizedBox(height: 4.v),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomImageView(
-                        imagePath: ImageConstant.imgLocation,
-                        height: 18.adaptSize,
-                        width: 18.adaptSize,
-                        margin: EdgeInsets.only(bottom: 3.v),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 5.h),
-                        child: Text(location,
-                            style: theme.textTheme
-                                .titleSmall), // Use the passed location
-                      ),
-                    ],
+                  Padding(
+                    padding: EdgeInsets.only(left: 5.h),
+                    child: Text(location, style: theme.textTheme.titleSmall),
                   ),
-                  SizedBox(height: 5.v),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomImageView(
-                        imagePath: ImageConstant.imgImage4,
-                        height: 28.v,
-                        width: 29.h,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 3.h),
-                        child: Text(usersCount,
-                            style: CustomTextStyles
-                                .bodyLargePoppins), // Use the passed usersCount
-                      ),
-                    ],
+                ],
+              ),
+              SizedBox(height: 5.v),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomImageView(
+                    imagePath: ImageConstant.imgImage4,
+                    height: 28.v,
+                    width: 29.h,
                   ),
-                  SizedBox(height: 10.v),
-                  _buildMap(context),
-                  SizedBox(height: 5.v),
-                  Text("Users", style: CustomTextStyles.titleLargeInter),
-                  SizedBox(height: 1.v),
-                  Text("Select the User to follow",
-                      style: theme.textTheme.titleSmall),
-                  Text("(scroll to see more users)",
-                      style: theme.textTheme.titleSmall),
+                  Padding(
+                    padding: EdgeInsets.only(left: 3.h),
+                    child: Text(usersCount, style: CustomTextStyles.bodyLargePoppins),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10.v),
+              _buildMap(context),
+              SizedBox(height: 5.v),
+              Text("Users", style: CustomTextStyles.titleLargeInter),
+              SizedBox(height: 1.v),
+              Text("Select the User to follow", style: theme.textTheme.titleSmall),
+              Text("(scroll to see more users)", style: theme.textTheme.titleSmall),
 
-                  Container(
-                    height: 70,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: _users
-                            .where((user) =>
-                                user.email !=
-                                FirebaseAuth.instance.currentUser?.email)
-                            .map((user) {
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                // Set isSelected to true for the tapped user and false for others
-                                _users.forEach((currentUser) {
-                                  currentUser.isSelected =
-                                      (currentUser == user);
-                                  // Update isSelected field in Firestore
-                                  FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(currentUser.id)
-                                      .update({
-                                        'isSelected': currentUser.isSelected
-                                      })
-                                      .then((_) => print(
-                                          'User isSelected updated in Firestore'))
-                                      .catchError((error) => print(
-                                          'Error updating user isSelected: $error'));
-                                });
-                              });
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                CustomImageView(
-                                  imagePath: user.isSelected
-                                      ? ImageConstant.imgImage10
-                                      : ImageConstant
-                                          .imgImage7, // Use different image based on isSelected
-                                  height: 20.adaptSize,
-                                  width: 20.adaptSize,
-                                  margin: EdgeInsets.only(top: 4.v),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 27.h),
-                                  child: Text(
-                                    user.name,
-                                    style: CustomTextStyles.titleMediumGray700
-                                        .copyWith(
-                                            color: user.isSelected
-                                                ? Colors.red
-                                                : Colors
-                                                    .black), // Change text color based on isSelected
-                                  ),
-                                ),
-                              ],
+              Container(
+                height: 70,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _users
+                        .where((user) => user.email != FirebaseAuth.instance.currentUser?.email)
+                        .map((user) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _users.forEach((currentUser) {
+                              currentUser.isSelected = (currentUser == user);
+                              FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(currentUser.id)
+                                  .update({'isSelected': currentUser.isSelected})
+                                  .then((_) => print('User isSelected updated in Firestore'))
+                                  .catchError((error) => print('Error updating user isSelected: $error'));
+                            });
+                          });
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CustomImageView(
+                              imagePath: user.isSelected ? ImageConstant.imgImage10 : ImageConstant.imgImage7,
+                              height: 20.adaptSize,
+                              width: 20.adaptSize,
+                              margin: EdgeInsets.only(top: 4.v),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 10.v),
-                  Container(
-                    height: 18,
-                    child: Text(
-                      "Direction to Friend: $_direction",
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 18,
-                          ),
-                    ),
-                  ),
-                  Container(
-                    height: 45,
-                    child: Transform.rotate(
-                      angle: directionAngles.containsKey(_direction)
-                          ? directionAngles[_direction]!
-                          : 0,
-                      child: CustomImageView(
-                        imagePath: ImageConstant.imgImage11,
-                        height: 40.v,
-                        width: 40.h,
-                        alignment: Alignment.centerRight,
-                        margin: EdgeInsets.only(right: 119.h),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 40.v),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      height: 30.v,
-                      width: 154.h,
-                      margin: EdgeInsets.only(right: 81.h),
-                      child: Stack(
-                        alignment: Alignment.topCenter,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.topCenter,
-                                  child: Text(
-                                    _directionMeters,
-                                    style: CustomTextStyles.titleLargeGray700
-                                        .copyWith(
-                                      fontSize: _directionMeters.length > 10
-                                          ? 14.0
-                                          : 16.0, // Adjust font size based on text length
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
+                            Padding(
+                              padding: EdgeInsets.only(left: 27.h),
+                              child: Text(
+                                user.name,
+                                style: CustomTextStyles.titleMediumGray700.copyWith(
+                                  color: user.isSelected ? Colors.red : Colors.black,
                                 ),
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 10.v),
+              Container(
+                height: 18,
+                child: Text(
+                  "Direction to Friend: $_direction",
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                      ),
+                ),
+              ),
+              Container(
+                height: 45,
+                child: FutureBuilder<double>(
+                  future: _getCompassHeading(), // Call the function to get the compass heading
+                  builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      // While waiting for the future to complete, show a loading indicator or placeholder
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      // If there's an error, handle it accordingly
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      // Once the future completes successfully, use the result to rotate the arrow
+                      return Transform.rotate(
+                        angle: snapshot.data ?? 0, // Use the heading to rotate the arrow
+                        child: CustomImageView(
+                          imagePath: ImageConstant.imgImage11,
+                          height: 40.v,
+                          width: 40.h,
+                          alignment: Alignment.centerRight,
+                          margin: EdgeInsets.only(right: 119.h),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+              SizedBox(height: 40.v),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  height: 30.v,
+                  width: 154.h,
+                  margin: EdgeInsets.only(right: 81.h),
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Text(
+                                _directionMeters,
+                                style: CustomTextStyles.titleLargeGray700.copyWith(
+                                  fontSize: _directionMeters.length > 10 ? 14.0 : 16.0,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
-                ]))));
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
+
 
   /// Section Widget
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -363,6 +358,23 @@ class _RoomScreenState extends State<RoomScreen> {
             ),
     );
   }
+
+  Future<double> _getCompassHeading() async {
+    try {
+      // Listen to the FlutterCompass events stream and get the first event
+      CompassEvent? compassEvent = await FlutterCompass.events!.first;
+      double heading = compassEvent?.heading ?? 0; // Extract the heading value
+      return heading;
+    } catch (e) {
+      // Handle any errors that occur during the process
+      print('Error getting compass heading: $e');
+      return 0; // Return a default value in case of error
+    }
+  }
+
+
+
+
 
   Future<void> _checkLocationPermission() async {
     var permissionStatus = await Permission.location.status;
@@ -445,7 +457,7 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
   void _updateLocationAndDirection() {
-    Timer.periodic(Duration(seconds: 2), (Timer timer) {
+    Timer.periodic(Duration(seconds: 4), (Timer timer) {
       _getUserLocation();
       _calculateDirection();
       _calculateDirectionMeters();
