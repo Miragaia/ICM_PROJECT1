@@ -184,61 +184,69 @@ class _RoomScreenState extends State<RoomScreen> {
                   SizedBox(height: 1.v),
                   Text("Select the User to follow",
                       style: theme.textTheme.titleSmall),
-                  SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: _users
-                          .where((user) =>
-                              user.email !=
-                              FirebaseAuth.instance.currentUser?.email)
-                          .map((user) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              // Set isSelected to true for the tapped user and false for others
-                              _users.forEach((currentUser) {
-                                currentUser.isSelected = (currentUser == user);
-                                // Update isSelected field in Firestore
-                                FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(currentUser.id)
-                                    .update(
-                                        {'isSelected': currentUser.isSelected})
-                                    .then((_) => print(
-                                        'User isSelected updated in Firestore'))
-                                    .catchError((error) => print(
-                                        'Error updating user isSelected: $error'));
+                  Text("(scroll to see more users)",
+                      style: theme.textTheme.titleSmall),
+
+                  Container(
+                    height: 80,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: _users
+                            .where((user) =>
+                                user.email !=
+                                FirebaseAuth.instance.currentUser?.email)
+                            .map((user) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                // Set isSelected to true for the tapped user and false for others
+                                _users.forEach((currentUser) {
+                                  currentUser.isSelected =
+                                      (currentUser == user);
+                                  // Update isSelected field in Firestore
+                                  FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(currentUser.id)
+                                      .update({
+                                        'isSelected': currentUser.isSelected
+                                      })
+                                      .then((_) => print(
+                                          'User isSelected updated in Firestore'))
+                                      .catchError((error) => print(
+                                          'Error updating user isSelected: $error'));
+                                });
                               });
-                            });
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CustomImageView(
-                                imagePath: user.isSelected
-                                    ? ImageConstant.imgImage10
-                                    : ImageConstant
-                                        .imgImage7, // Use different image based on isSelected
-                                height: 26.adaptSize,
-                                width: 26.adaptSize,
-                                margin: EdgeInsets.only(top: 4.v),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 27.h),
-                                child: Text(
-                                  user.name,
-                                  style: CustomTextStyles.titleLargeGray700
-                                      .copyWith(
-                                          color: user.isSelected
-                                              ? Colors.red
-                                              : Colors
-                                                  .black), // Change text color based on isSelected
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CustomImageView(
+                                  imagePath: user.isSelected
+                                      ? ImageConstant.imgImage10
+                                      : ImageConstant
+                                          .imgImage7, // Use different image based on isSelected
+                                  height: 26.adaptSize,
+                                  width: 26.adaptSize,
+                                  margin: EdgeInsets.only(top: 4.v),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 27.h),
+                                  child: Text(
+                                    user.name,
+                                    style: CustomTextStyles.titleLargeGray700
+                                        .copyWith(
+                                            color: user.isSelected
+                                                ? Colors.red
+                                                : Colors
+                                                    .black), // Change text color based on isSelected
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
 
