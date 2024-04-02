@@ -188,7 +188,7 @@ class _RoomScreenState extends State<RoomScreen> {
                       style: theme.textTheme.titleSmall),
 
                   Container(
-                    height: 90,
+                    height: 70,
                     child: SingleChildScrollView(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

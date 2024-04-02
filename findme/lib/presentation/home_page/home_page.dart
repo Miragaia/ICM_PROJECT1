@@ -19,6 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   TextEditingController searchController = TextEditingController();
+  List<Map<String, dynamic>> _searchResults = [];
   @override
   void initState() {
     super.initState();
@@ -246,6 +247,10 @@ class _HomePageState extends State<HomePage> {
             child: CustomSearchView(
               controller: searchController,
               hintText: "Search rooms...",
+              onChanged: (value) {
+              // Call method to perform search whenever text changes
+              searchRooms(value);
+            },
             ),
           ),
         ],
@@ -254,12 +259,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHome(
-      BuildContext context, List<Map<String, dynamic>> roomsData) {
+    BuildContext context, 
+    List<Map<String, dynamic>> roomsData
+  ) {
+    // Use search results if available, otherwise use all rooms data
+    List<Map<String, dynamic>> displayData = _searchResults.isNotEmpty
+        ? _searchResults
+        : roomsData;
+
     return ListView.builder(
-      itemCount: roomsData.length,
+      itemCount: displayData.length,
       shrinkWrap: true,
-      physics:
-          ClampingScrollPhysics(), // Eita que o ListView tenha um efeito de rebote
+      physics: ClampingScrollPhysics(),
       itemBuilder: (context, index) {
         return GestureDetector(
           onTap: () {
@@ -268,10 +279,10 @@ class _HomePageState extends State<HomePage> {
               isScrollControlled: true,
               builder: (BuildContext context) {
                 return EnterRoomBottomsheet(
-                  roomName: roomsData[index]['roomName'],
-                  location: roomsData[index]['location'],
-                  usersCount: roomsData[index]['usersCount'],
-                  image: roomsData[index]['image'],
+                  roomName: displayData[index]['roomName'],
+                  location: displayData[index]['location'],
+                  usersCount: displayData[index]['usersCount'],
+                  image: displayData[index]['image'],
                 );
               },
             );
@@ -279,10 +290,10 @@ class _HomePageState extends State<HomePage> {
           child: Padding(
             padding: EdgeInsets.only(bottom: 10),
             child: HomeItemWidget(
-              roomName: roomsData[index]['roomName'],
-              location: roomsData[index]['location'],
-              usersCount: roomsData[index]['usersCount'],
-              image: roomsData[index]['image'],
+              roomName: displayData[index]['roomName'],
+              location: displayData[index]['location'],
+              usersCount: displayData[index]['usersCount'],
+              image: displayData[index]['image'],
             ),
           ),
         );
@@ -334,6 +345,51 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       print('Error updating roomId: $e');
+    }
+  }
+
+  void searchRooms(String searchText) {
+    // Query Firestore to search for rooms matching the searchText
+    if (searchText.isNotEmpty) {
+      FirebaseFirestore.instance
+          .collection('rooms')
+          .where('name', isGreaterThanOrEqualTo: searchText)
+          .where('name', isLessThanOrEqualTo: searchText + '\uf8ff')
+          .snapshots()
+          .listen((snapshot) {
+        if (snapshot.docs.isNotEmpty) {
+          // Process search results
+          List<Map<String, dynamic>> roomsData = [];
+          snapshot.docs.forEach((doc) {
+            Map<String, dynamic> data = doc.data();
+            String roomName = data['name'];
+            int usersCount = 0; // Implement logic to get users count if needed
+
+            // Add room data to list
+            roomsData.add({
+              'roomName': roomName,
+              'location': data['location'],
+              'usersCount': '$usersCount Users',
+              'image': ImageConstant.imgDefaulRoom,
+            });
+          });
+
+          // Update UI with search results
+          setState(() {
+            _searchResults = roomsData;
+          });
+        } else {
+          // No matching rooms found
+          setState(() {
+            _searchResults = [];
+          });
+        }
+      });
+    } else {
+      // Clear search results when search text is empty
+      setState(() {
+        _searchResults = [];
+      });
     }
   }
 }
