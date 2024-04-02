@@ -358,12 +358,18 @@ class _HomePageState extends State<HomePage> {
           .snapshots()
           .listen((snapshot) {
         if (snapshot.docs.isNotEmpty) {
+          int usersCount = 0;
           // Process search results
           List<Map<String, dynamic>> roomsData = [];
-          snapshot.docs.forEach((doc) {
+          snapshot.docs.forEach((doc) async {
             Map<String, dynamic> data = doc.data();
             String roomName = data['name'];
-            int usersCount = 0; // Implement logic to get users count if needed
+            QuerySnapshot usersSnapshot = await FirebaseFirestore.instance
+                .collection('users')
+                .where('roomId', isEqualTo: roomName)
+                .get();
+            usersCount = usersSnapshot.size;
+
 
             // Add room data to list
             roomsData.add({
