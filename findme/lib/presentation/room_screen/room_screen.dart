@@ -359,11 +359,45 @@ class _RoomScreenState extends State<RoomScreen> {
     );
   }
 
+
   Future<double> _getCompassHeading() async {
     try {
-      // Listen to the FlutterCompass events stream and get the first event
+      // Find the selected friend's location
+      User selectedFriend = _users.firstWhere((user) => user.isSelected,
+          orElse: () => User(
+              id: '',
+              name: '',
+              email: '',
+              latitude: 0,
+              longitude: 0,
+              isSelected: false));
+      double friendLatitude = selectedFriend.latitude;
+      double friendLongitude = selectedFriend.longitude;
+
+      // Get the current user's location
+      double userLatitude = double.parse(_latitude);
+      double userLongitude = double.parse(_longitude);
+
+      // Calculate the bearing (heading) between the current user and the selected friend
+      double bearing = bearingBetweenCoordinates(
+        LatLng(userLatitude, userLongitude),
+        LatLng(friendLatitude, friendLongitude),
+      );
+
       CompassEvent? compassEvent = await FlutterCompass.events!.first;
-      double heading = compassEvent?.heading ?? 0; // Extract the heading value
+      double arrowRotation = compassEvent?.heading ?? 0; // Extract the heading value
+
+      // Calculate the difference between the device's orientation and the bearing
+      double deviceOrientation = arrowRotation;
+      double heading = bearing - deviceOrientation;
+      
+      // Ensure the heading is within the range [0, 360)
+      if (heading < 0) {
+        heading += 360;
+      } else if (heading >= 360) {
+        heading -= 360;
+      }
+
       return heading;
     } catch (e) {
       // Handle any errors that occur during the process
@@ -371,6 +405,7 @@ class _RoomScreenState extends State<RoomScreen> {
       return 0; // Return a default value in case of error
     }
   }
+
 
 
 
