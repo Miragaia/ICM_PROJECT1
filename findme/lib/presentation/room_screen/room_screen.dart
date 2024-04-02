@@ -14,7 +14,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -171,7 +170,8 @@ class _RoomScreenState extends State<RoomScreen> {
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 3.h),
-                    child: Text(usersCount, style: CustomTextStyles.bodyLargePoppins),
+                    child: Text(usersCount,
+                        style: CustomTextStyles.bodyLargePoppins),
                   ),
                 ],
               ),
@@ -180,16 +180,19 @@ class _RoomScreenState extends State<RoomScreen> {
               SizedBox(height: 5.v),
               Text("Users", style: CustomTextStyles.titleLargeInter),
               SizedBox(height: 1.v),
-              Text("Select the User to follow", style: theme.textTheme.titleSmall),
-              Text("(scroll to see more users)", style: theme.textTheme.titleSmall),
-
+              Text("Select the User to follow",
+                  style: theme.textTheme.titleSmall),
+              Text("(scroll to see more users)",
+                  style: theme.textTheme.titleSmall),
               Container(
                 height: 70,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: _users
-                        .where((user) => user.email != FirebaseAuth.instance.currentUser?.email)
+                        .where((user) =>
+                            user.email !=
+                            FirebaseAuth.instance.currentUser?.email)
                         .map((user) {
                       return GestureDetector(
                         onTap: () {
@@ -199,9 +202,12 @@ class _RoomScreenState extends State<RoomScreen> {
                               FirebaseFirestore.instance
                                   .collection('users')
                                   .doc(currentUser.id)
-                                  .update({'isSelected': currentUser.isSelected})
-                                  .then((_) => print('User isSelected updated in Firestore'))
-                                  .catchError((error) => print('Error updating user isSelected: $error'));
+                                  .update(
+                                      {'isSelected': currentUser.isSelected})
+                                  .then((_) => print(
+                                      'User isSelected updated in Firestore'))
+                                  .catchError((error) => print(
+                                      'Error updating user isSelected: $error'));
                             });
                           });
                         },
@@ -209,7 +215,9 @@ class _RoomScreenState extends State<RoomScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CustomImageView(
-                              imagePath: user.isSelected ? ImageConstant.imgImage10 : ImageConstant.imgImage7,
+                              imagePath: user.isSelected
+                                  ? ImageConstant.imgImage10
+                                  : ImageConstant.imgImage7,
                               height: 20.adaptSize,
                               width: 20.adaptSize,
                               margin: EdgeInsets.only(top: 4.v),
@@ -218,8 +226,11 @@ class _RoomScreenState extends State<RoomScreen> {
                               padding: EdgeInsets.only(left: 27.h),
                               child: Text(
                                 user.name,
-                                style: CustomTextStyles.titleMediumGray700.copyWith(
-                                  color: user.isSelected ? Colors.red : Colors.black,
+                                style: CustomTextStyles.titleMediumGray700
+                                    .copyWith(
+                                  color: user.isSelected
+                                      ? Colors.red
+                                      : Colors.black,
                                 ),
                               ),
                             ),
@@ -230,7 +241,6 @@ class _RoomScreenState extends State<RoomScreen> {
                   ),
                 ),
               ),
-
               SizedBox(height: 10.v),
               Container(
                 height: 18,
@@ -243,10 +253,12 @@ class _RoomScreenState extends State<RoomScreen> {
                 ),
               ),
               Container(
-                height: 45,
+                height: 40,
                 child: FutureBuilder<double>(
-                  future: _getCompassHeading(), // Call the function to get the compass heading
-                  builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+                  future:
+                      _getCompassHeading(), // Call the function to get the compass heading
+                  builder:
+                      (BuildContext context, AsyncSnapshot<double> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       // While waiting for the future to complete, show a loading indicator or placeholder
                       return CircularProgressIndicator();
@@ -256,7 +268,11 @@ class _RoomScreenState extends State<RoomScreen> {
                     } else {
                       // Once the future completes successfully, use the result to rotate the arrow
                       return Transform.rotate(
-                        angle: snapshot.data ?? 0, // Use the heading to rotate the arrow
+                        angle: directionAngles.containsKey(_direction)
+                            ? directionAngles[_direction]!
+                            : 0,
+                        origin: Offset(20.h,
+                            20.v), // Defina o ponto de origem para o centro da imagem
                         child: CustomImageView(
                           imagePath: ImageConstant.imgImage11,
                           height: 40.v,
@@ -287,8 +303,11 @@ class _RoomScreenState extends State<RoomScreen> {
                               alignment: Alignment.topCenter,
                               child: Text(
                                 _directionMeters,
-                                style: CustomTextStyles.titleLargeGray700.copyWith(
-                                  fontSize: _directionMeters.length > 10 ? 14.0 : 16.0,
+                                style:
+                                    CustomTextStyles.titleLargeGray700.copyWith(
+                                  fontSize: _directionMeters.length > 10
+                                      ? 14.0
+                                      : 16.0,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -306,7 +325,6 @@ class _RoomScreenState extends State<RoomScreen> {
       ),
     );
   }
-
 
   /// Section Widget
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -359,7 +377,6 @@ class _RoomScreenState extends State<RoomScreen> {
     );
   }
 
-
   Future<double> _getCompassHeading() async {
     try {
       // Find the selected friend's location
@@ -385,12 +402,13 @@ class _RoomScreenState extends State<RoomScreen> {
       );
 
       CompassEvent? compassEvent = await FlutterCompass.events!.first;
-      double arrowRotation = compassEvent?.heading ?? 0; // Extract the heading value
+      double arrowRotation =
+          compassEvent?.heading ?? 0; // Extract the heading value
 
       // Calculate the difference between the device's orientation and the bearing
       double deviceOrientation = arrowRotation;
       double heading = bearing - deviceOrientation;
-      
+
       // Ensure the heading is within the range [0, 360)
       if (heading < 0) {
         heading += 360;
@@ -405,11 +423,6 @@ class _RoomScreenState extends State<RoomScreen> {
       return 0; // Return a default value in case of error
     }
   }
-
-
-
-
-
 
   Future<void> _checkLocationPermission() async {
     var permissionStatus = await Permission.location.status;
@@ -589,7 +602,7 @@ class _RoomScreenState extends State<RoomScreen> {
     double bearing = bearingBetweenCoordinates(
       LatLng(_initialCameraPosition.target.latitude,
           _initialCameraPosition.target.longitude),
-          LatLng(friendLatitude, friendLongitude),
+      LatLng(friendLatitude, friendLongitude),
     );
 
     // Convert degrees to cardinal direction
