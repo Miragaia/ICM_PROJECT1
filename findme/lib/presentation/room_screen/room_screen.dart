@@ -457,7 +457,7 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
   void _updateLocationAndDirection() {
-    Timer.periodic(Duration(seconds: 2), (Timer timer) {
+    Timer.periodic(Duration(seconds: 4), (Timer timer) {
       _getUserLocation();
       _calculateDirection();
       _calculateDirectionMeters();
