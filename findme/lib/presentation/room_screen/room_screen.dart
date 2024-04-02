@@ -523,10 +523,26 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
   void _calculateDirection() {
+    // Get the current user's location
+    double userLatitude = double.parse(_latitude);
+    double userLongitude = double.parse(_longitude);
+
+    // Find the selected friend's location
+    User selectedFriend = _users.firstWhere((user) => user.isSelected,
+        orElse: () => User(
+            id: '',
+            name: '',
+            email: '',
+            latitude: 0,
+            longitude: 0,
+            isSelected: false));
+    double friendLatitude = selectedFriend.latitude;
+    double friendLongitude = selectedFriend.longitude;
+
     double bearing = bearingBetweenCoordinates(
       LatLng(_initialCameraPosition.target.latitude,
           _initialCameraPosition.target.longitude),
-      _friendLocation,
+          LatLng(friendLatitude, friendLongitude),
     );
 
     // Convert degrees to cardinal direction
